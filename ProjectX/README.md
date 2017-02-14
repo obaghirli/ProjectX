@@ -1,6 +1,6 @@
 -------------------------------------------------------------ProjectX----------------------------------------------------------
 Directory Setup:---------------------------------------------------------------------------------------------------------------
-Download Projectx from GitHub and locate in your local machine with the exact same name
+Download ProjectX from GitHub and locate in your local machine with the name "ProjectX"
 Edit "project.location" file in ProjectX directory. e.g. /home/iorkhan/Desktop/Dropbox/, DO NOT FORGET "/" at the end if linux
 -------------------------------------------------------------------------------------------------------------------------------
 
