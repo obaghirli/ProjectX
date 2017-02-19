@@ -19,10 +19,12 @@ Improvements:
 * 6) multiprocessing is enabled for the find_best_pair() function which is the most computationally expensive part of the algorithm. 
 
 ## Download and Directory Setup
-Download Projectx from [GitHub](https://github.com/orkhanbaghirli/ProjectX.git) and locate in your local machine with the exact same name
-Edit "project.location" file in ProjectX directory. e.g. /home/iorkhan/Desktop/Dropbox/, DO NOT FORGET "/" at the end if linux
-
-## Papers
+Download Projectx from [GitHub](https://github.com/orkhanbaghirli/ProjectX.git) and locate in your local machine with the exact same name [ProjectX].
+Edit "project.location" file in ProjectX directory and pass the location of ProjectX directory on your local machine. e.g.: 
+```
+/home/iorkhan/Desktop/Dropbox/    DO NOT FORGET "/" at the end if linux is your environment.
+```
+## Papers for the original implementation of the algorithm used in this project
 * Primary:::[Fast algorithm for detecting community structure in networks](https://arxiv.org/pdf/cond-mat/0309508.pdf)
 * Supporting:::[Finding community structure in very large networks](https://arxiv.org/pdf/cond-mat/0408187.pdf)
 * Benchmark Datasets:::[Benchmark graphs for testing community detection algorithms](https://arxiv.org/pdf/0805.4770.pdf)
