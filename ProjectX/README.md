@@ -1,6 +1,14 @@
 -------------------------------------------------------------ProjectX----------------------------------------------------------
+Version:-----------------------------------------------------------------------------------------------------------------------
+Version No: 01   //old:00
+Improvements:
+1) delete row/col in update_CA() function is more memory efficient
+2) find_best_pair() function is much faster
+3) benchmark datasets, adjacency matrix is now int8 instead of int64.
+4) del community_pool, right before its new assignment with np.deepcopy() in the __name_=__main__ function 
+-------------------------------------------------------------------------------------------------------------------------------
 Directory Setup:---------------------------------------------------------------------------------------------------------------
-Download ProjectX from GitHub and locate in your local machine with the name "ProjectX"
+Download Projectx from GitHub and locate in your local machine with the exact same name
 Edit "project.location" file in ProjectX directory. e.g. /home/iorkhan/Desktop/Dropbox/, DO NOT FORGET "/" at the end if linux
 -------------------------------------------------------------------------------------------------------------------------------
 

@@ -15,7 +15,7 @@ TEST=[ [ 0,  1,  1,  1,  0,  0,  0,  0,  0,  0,   0,   0,   0  ],  #1
 	   [ 0,  0,  0,  0,  0,  0,  0,  0,  1,  1,   0,   1,   0  ],  #11
 	   [ 0,  0,  0,  0,  0,  0,  0,  0,  0,  1,   1,   0,   1  ],  #12
 	   [ 0,  0,  0,  0,  0,  0,  0,  0,  1,  0,   0,   1,   0  ] ] #13
-
+TEST=np.array(TEST).astype('int8')
 
 def karate_club():
 	clean_lines=[]
@@ -30,7 +30,7 @@ def karate_club():
 
 	clean_lines=np.array(clean_lines).reshape((len(clean_lines)/2,2))
 	(row,col)=clean_lines.shape
-	KARATE=np.zeros((34,34))
+	KARATE=np.zeros((34,34)).astype('int8')
 
 	for u in range(row):
 		[fs1,sc1]=clean_lines[u,0].split()
@@ -54,7 +54,7 @@ def football():
 
 	clean_lines=np.array(clean_lines).reshape((len(clean_lines)/2,2))
 	(row,col)=clean_lines.shape
-	FOOTBALL=np.zeros((115,115))
+	FOOTBALL=np.zeros((115,115)).astype('int8')
 
 	for u in range(row):
 		[fs1,sc1]=clean_lines[u,0].split()
@@ -78,7 +78,7 @@ def dolphin():
 
 	clean_lines=np.array(clean_lines).reshape((len(clean_lines)/2,2))
 	(row,col)=clean_lines.shape
-	DOLPHIN=np.zeros((62,62))
+	DOLPHIN=np.zeros((62,62)).astype('int8')
 
 	for u in range(row):
 		[fs1,sc1]=clean_lines[u,0].split()
@@ -101,13 +101,44 @@ def gn(project_location):
 	clean_lines=np.array(clean_lines).reshape((len(clean_lines),1))
 	(row,col)=clean_lines.shape
 	size= int(clean_lines[row-1,0].split()[0])
-	GN=np.zeros((size,size))
+	GN=np.zeros((size,size)).astype('int8')
 	for u in range(row):
 		[s,t]=clean_lines[u,0].split()
 		GN[ int(s)-1 , int(t)-1 ]=1
 
 	return GN
 
+	
+def arxivhepth():
+	stream=[]
 
+	with open("arxivhepth.txt") as f:
+		lines=f.readlines()
+	lines=[line.strip() for line in lines]
+	lines=np.array(lines)
+	length=len(lines)
 
+	mat=lines.reshape((length,1))
+
+	for i in range(length):
+		[s,t]=mat[i,0].split()
+		stream.append(int(s))
+		stream.append(int(t))
+
+	stream=np.array(stream)
+	base=np.unique(stream)
+
+	idx=0
+	for i in base:
+		stream[ np.where(stream==i) ]=idx
+		idx+=1
+
+	stream=stream.reshape((length,2))
+	ARXIVHEPTH=np.zeros((len(base),len(base))).astype('int8')
+
+	for i in range(length):
+		ARXIVHEPTH[ stream[i,0] ,stream[i,1] ]=1
+		ARXIVHEPTH[ stream[i,1] ,stream[i,0] ]=1
+
+	return ARXIVHEPTH
 
