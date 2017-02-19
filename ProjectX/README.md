@@ -6,6 +6,7 @@ Improvements:
 2) find_best_pair() function is much faster
 3) benchmark datasets, adjacency matrix is now int8 instead of int64.
 4) del community_pool, right before its new assignment with np.deepcopy() in the __name_=__main__ function 
+5) arxivhepth dataset is added
 -------------------------------------------------------------------------------------------------------------------------------
 Directory Setup:---------------------------------------------------------------------------------------------------------------
 Download Projectx from GitHub and locate in your local machine with the exact same name
@@ -89,6 +90,7 @@ draw.py // functions to plot Adjacency Matrix (scatter plot), build graph (befor
 karate.txt  //Karate Club dataset
 dolphin.txt  //Dolphin Network dataset
 football.txt //American Football Association dataset 
+arxivhepth.txt //Arxiv dataset, High Energy Physics +27,000 nodes, +350,000 edges
 project.location //this file stores the location of "ProjectX" on your local machine, YOU HAVE TO EDIT IT and do not forget "/" at the end (for Linux)
 benchmark //This directory stores all required files for GN dataset generation and performance evaluation
 ------------------------------------------------------------------------------------------------------------------------------
