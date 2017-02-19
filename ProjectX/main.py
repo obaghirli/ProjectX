@@ -9,6 +9,7 @@ import draw
 import performance
 import summary
 import ETA
+import multiprocess
 
 
 seed=random.randint(1,1000)
@@ -71,6 +72,32 @@ def find_best_pair(CA):
 		sys.exit( "There is no any possible merge. Hit the Isolated Communities. SYSTEM EXIT!"  )
 	return (best_pair,best_dQ)
 
+
+def find_best_pair_mproc(CA,ret,index_range):
+	best_pair=[]
+	best_dQ=-1e1000000
+	(row,col)=CA.shape
+	can_merge=False
+	start_index=index_range[0]
+	end_index=index_range[1]
+	
+	for i in range( start_index,end_index+1):
+		check_this=np.where(CA[i,i+1:col]>0)[0]
+		for newj in range(len(check_this)):
+			j=check_this[newj]+i+1
+			dQ=calc_dQ(CA,i,j)
+			if dQ>best_dQ:
+				best_dQ=dQ
+				best_pair=[i,j]
+				can_merge=True
+
+	if can_merge==False:
+		best_dQ=-1e1000000
+		best_pair=[-999,-999]
+	ret.put( (best_pair,best_dQ) )
+
+
+
 def update_community_pool(community_pool,best_pair):
 	community_pool[best_pair[0]].members=community_pool[best_pair[0]].members+community_pool[best_pair[1]].members
 	del community_pool[best_pair[1]]
@@ -102,9 +129,16 @@ if __name__=="__main__":
 	arg_list=[]
 	GN_CHOSEN=False
 	NO_DRAW=False
+	MPROC=False
+	cpu=1
+
+
 
 	for arg in sys.argv:
 		arg_list.append(arg.upper())
+
+	if "-MPROC" in arg_list:
+		(MPROC,cpu)=multiprocess.handle_mproc(arg_list)
 
 	if "-GN" in arg_list:
 		print "Loading GN Benchmark Dataset... "
@@ -140,8 +174,8 @@ if __name__=="__main__":
 	if "-NODRAW" in arg_list:
 		NO_DRAW=True
 
-	total_edge=np.sum(A)/2
 
+	total_edge=np.sum(A)/2
 	t_start_algo=time.time()
 
 	print "Initializing Communities... "
@@ -167,7 +201,11 @@ if __name__=="__main__":
 
 		t_start_loop=time.time()
 
-		(best_pair,best_dQ)=find_best_pair(CA)
+		if MPROC==True:
+			return_find_best_pair_mproc=multiprocess.multiprocess( find_best_pair_mproc,(CA,),cpu )
+			(best_pair,best_dQ)=multiprocess.handle_find_best_pair(return_find_best_pair_mproc)
+		elif MPROC==False:
+			(best_pair,best_dQ)=find_best_pair(CA)
 
 		CA=update_CA(CA,best_pair)
 		curr_community_pool=update_community_pool(curr_community_pool,best_pair)
