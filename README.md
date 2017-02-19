@@ -81,20 +81,20 @@ sudo apt-get install python-igraph
 ```
 
 ## Girvan Newman (GN) Benchmark Dataset Generation
-Note: The package comes with a sample GN dataset [network.dat, community.dat] at location: ~/ProjectX/benchmark
-You do not need to generate a new dataset if you do not need a new dataset
-Before you generate a new dataset, copy [network.dat, community.dat, statistics.dat] files at ~/ProjectX/benchmark to ~/ProjectX/benchmark/TEST_NETWORK/TEST directory for future references
-main.py will only use datasets [network.dat, community.dat] at location: ~/ProjectX/benchmark
+Note: The package comes with a sample GN dataset [network.dat, community.dat] at location: ~/ProjectX/benchmark.
+You do not need to generate a new dataset if you do not need a new dataset.
+Before you generate a new dataset, copy [network.dat, community.dat, statistics.dat] files at ~/ProjectX/benchmark to ~/ProjectX/benchmark/TEST_NETWORK/TEST directory for future references.
+main.py will only use datasets [network.dat, community.dat] at location: ~/ProjectX/benchmark.
 
 How to generate GN Benchmark Dataset:
-The following commands will use [parameters.dat,bech_seed.dat and others] and output [network.dat,community.dat and statistics.dat]
+The following commands will use [parameters.dat,bech_seed.dat and others] and generate [network.dat,community.dat and statistics.dat].
 ```
 cd ~/ProjectX/benchmark
 make
 ./benchmark
 
 ```
-Note: make sure that ./benchmark does not give you any WARNING. Typical warning includes "... took too long ..." if this happens, edit the parameters in parameters.dat file untill you recieve no WARNINGS  
+Note: make sure that ./benchmark does not give you any WARNING. Typical warning includes "... took too long ..." if this happens, edit the parameters in parameters.dat file untill you recieve no WARNINGS.  
 Note: main.py uses only [network.dat] to build the graph and [community.dat] to do the performance evaluation as community.dat is the true community assignments of the benchmark dataset.
 
 
