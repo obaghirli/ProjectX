@@ -40,19 +40,6 @@ def edge_ii(A,thiscomm,total_edge):
 	C=B[:,thiscomm.members]
 	return 0.5*float(np.sum(C))/total_edge
 
-'''
-def CommA(A,community_pool,total_edge):
-	comm_num=len(community_pool)
-	CA=np.zeros((comm_num,comm_num))
-	for i in range(comm_num):
-		for j in range(i,comm_num):
-			if i==j:
-				CA[i,i]=edge_ii(A,community_pool[i],total_edge)
-			else:
-				CA[i,j]=0.5*edge_ij(A,community_pool[i],community_pool[j],total_edge)
-				CA[j,i]=CA[i,j]
-	return CA
-'''
 
 def calc_init_Q(CA):
 	Q=np.matrix.trace(CA)-np.sum( (np.sum(CA,axis=1))**2 )
@@ -94,8 +81,6 @@ def update_CA(CA,best_pair):
 	delete_index=best_pair[1]
 	CA[best_pair[0],:]=CA[best_pair[0],:]+CA[best_pair[1],:]
 	CA[:,best_pair[0]]=CA[:,best_pair[0]]+CA[:,best_pair[1]]
-	#CA=np.delete( CA,(best_pair[1]),axis=0 )
-	#CA=np.delete( CA,(best_pair[1]),axis=1 )
 
 	mask=np.ones(CA.shape, dtype=np.bool)
 	mask[delete_index]=False
@@ -163,8 +148,6 @@ if __name__=="__main__":
 	curr_community_pool=initialize(A)
 	community_pool=copy.deepcopy( curr_community_pool )
 	
-	#CA=CommA(A,curr_community_pool,total_edge)
-	#comm_num=len(community_pool)
 	CA=0.5*A/total_edge
 	curr_Q=calc_init_Q(CA)
 	Q=curr_Q
