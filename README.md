@@ -16,7 +16,7 @@ Improvements:
 * 3) benchmark datasets, adjacency matrix is now int8 instead of int64 for less memory consumption.
 * 4) deleting community_pool, right before its new assignment with np.deepcopy() in the main part of the main.py function 
 * 5) arxivhepth dataset is added
-* 6) multiprocessing is enabled for the find_best_pair() function with is the most computationally expensive part of the algorithm. 
+* 6) multiprocessing is enabled for the find_best_pair() function which is the most computationally expensive part of the algorithm. 
 
 ## Download and Directory Setup
 Download Projectx from [GitHub](https://github.com/orkhanbaghirli/ProjectX.git) and locate in your local machine with the exact same name
