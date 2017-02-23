@@ -10,9 +10,9 @@ You can also pass one of the datasets of particular interest the same way. e.g p
 This command will choose Dolphin network dataset and suppress graphics at the end. If -mproc agrument with a corresponding value is passed, 
 then you get the advantage of Multiprocessing, value being the number of requested cpu. This is recommended for large datasets.  
 ## Version
-Version No: _03   /  previous releases: _00, _01, _02
+**Version No: _03**   /  previous releases: _00, _01, _02
 
-Version_00: Original submission
+**Version_00: Original submission**
 
 Version_01: Improvements
 * deleting row/col from a matrix in update_CA() function is much more memory efficient
@@ -20,9 +20,11 @@ Version_01: Improvements
 * benchmark datasets, adjacency matrix is now int8 instead of int64 for less memory consumption.
 * deleting community_pool, right before its new assignment with np.deepcopy() in the main part of the main.py function 
 * arxivhepth dataset is added
-Version_02: Improvements
+
+**Version_02: Improvements**
 * multiprocessing is enabled for the find_best_pair() function which is the most computationally expensive part of the algorithm
-Version_03: Improvements
+
+**Version_03: Improvements**
 * update_CA() function uses logical masks for matrix/array operations, less looping, optimized for sparse matrices
 * find_candidate_pairs() functions is written to take load from find_best_pair() function, uses logical masking, and optimized for sparse matrices
 * find_best_pair() is now more multiprocessing friendly
