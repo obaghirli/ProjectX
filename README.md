@@ -14,7 +14,7 @@ then you get the advantage of Multiprocessing, value being the number of request
 
 **Version_00: Original submission**
 
-Version_01: Improvements
+**Version_01: Improvements**
 * deleting row/col from a matrix in update_CA() function is much more memory efficient
 * find_best_pair() function is much faster.
 * benchmark datasets, adjacency matrix is now int8 instead of int64 for less memory consumption.
