@@ -10,7 +10,7 @@ You can also pass one of the datasets of particular interest the same way. e.g p
 This command will choose Dolphin network dataset and suppress graphics at the end. If -mproc agrument with a corresponding value is passed, 
 then you get the advantage of Multiprocessing, value being the number of requested cpu. This is recommended for large datasets.  
 ## Version
-Version No: _03   |  previous releases: _00, _01, _02
+Version No: _03   /  previous releases: _00, _01, _02
 Version_00: Original submission
 Version_01: Improvements
 * deleting row/col from a matrix in update_CA() function is much more memory efficient
