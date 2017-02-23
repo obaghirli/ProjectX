@@ -1,6 +1,7 @@
 # ProjectX
 ## Description 
-ProjectX is part of a larger project. ProjectX uses several real world and artificial network datasets, and execute community detection algorithm on them.
+ProjectX is part of a larger project. ProjectX uses several real world and artificial network datasets, and execute community detection algorithm 
+[Fast algorithm for detecting community structure in networks by M.E.J Newman](https://arxiv.org/pdf/cond-mat/0309508.pdf) on them.
 Sample datasets are Karate club, Football club, GN benchmark datasets, Dolphin network, Arxiv.org High Energy Physics (untill 2003) datasets.
 The input of the program is one of these datasets passed as an argument to main.py function using the terminal. 
 The output of the program is the community pool, which holds community objects and each community object holds its members assigned to it.
@@ -9,14 +10,23 @@ You can also pass one of the datasets of particular interest the same way. e.g p
 This command will choose Dolphin network dataset and suppress graphics at the end. If -mproc agrument with a corresponding value is passed, 
 then you get the advantage of Multiprocessing, value being the number of requested cpu. This is recommended for large datasets.  
 ## Version
-Version No: 02   //  old: 00, 01
-Improvements:
-* 1) deleting row/col from a matrix in update_CA() function is much more memory efficient
-* 2) find_best_pair() function is much faster
+Version No: _03   //  previous releases: _00, _01, _02.
+Version_00: Original submission.
+Version_01: Improvements.
+* 1) deleting row/col from a matrix in update_CA() function is much more memory efficient.
+* 2) find_best_pair() function is much faster.
 * 3) benchmark datasets, adjacency matrix is now int8 instead of int64 for less memory consumption.
 * 4) deleting community_pool, right before its new assignment with np.deepcopy() in the main part of the main.py function 
 * 5) arxivhepth dataset is added
-* 6) multiprocessing is enabled for the find_best_pair() function which is the most computationally expensive part of the algorithm. 
+Version_02: Improvements
+* 6) multiprocessing is enabled for the find_best_pair() function which is the most computationally expensive part of the algorithm.
+Version_03: Improvements
+* 7) update_CA() function uses logical masks for matrix/array operations, less looping, optimized for sparse matrices
+* 8) find_candidate_pairs() functions is written to take load from find_best_pair() function, uses logical masking, and optimized for sparse matrices
+* 9) find_best_pair() is now more multiprocessing friendly
+* 10) community_pool is not stored im memory, rather joins.txt file is generated to dump best pairs and used to build community_pool at the end, after memory is relieved, decreases peak memory consumption, no need to duplicate large arrays. For large datasets, this improves the execution time of the core algorithm.
+* 11) ETA(Estimate Time) function was over estimating remaining time for large datasets, is now fixed, and works accurately.
+* 12) Information on data characteristics is now printed on screen, including: total node number, total edge number, average degree  
 
 ## Download and Directory Setup
 Download Projectx from [GitHub](https://github.com/orkhanbaghirli/ProjectX.git) and locate in your local machine with the exact same name [ProjectX].
@@ -98,7 +108,7 @@ Note: make sure that ./benchmark does not give you any WARNING. Typical warning 
 Note: main.py uses only [network.dat] to build the graph and [community.dat] to do the performance evaluation as community.dat is the true community assignments of the benchmark dataset.
 
 
-## Software Filesystem
+## Filesystem
 
 * main.py  // core algorithm 
 * benchmark.py // functions to generate Adjacency Matrix from several .txt and .dat data files 
@@ -114,6 +124,7 @@ Note: main.py uses only [network.dat] to build the graph and [community.dat] to 
 * arxivhepth.txt //Arxiv dataset, High Energy Physics +27,000 nodes, +350,000 edges
 * project.location //this file stores the location of "ProjectX" on your local machine, YOU HAVE TO EDIT IT and do not forget "/" at the end (for Linux)
 * benchmark //This directory stores all required files for GN dataset generation and performance evaluation
+* joins.txt file is generated during community detection and is vital part of it. It stores best pairs, and is used to replay the joins, to build the communities at the end of the program flow. 
 
 ## Notes on ADJACENCY MATRIX
 ADJACENCY MATRIX matrix must be:
