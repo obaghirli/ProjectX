@@ -1,12 +1,15 @@
-def calculate_remaining_time(total_task_size,CA,t_start_loop,t_end_loop,time_list):
-	remaining_task_size=len(CA)
-	time_taken_prev_task=(t_end_loop-t_start_loop)/60.0
-	time_list.append(time_taken_prev_task)
-
-	if remaining_task_size>total_task_size/2.0:
-		return remaining_task_size*sum(time_list)/len(time_list)
-	else:
-		return remaining_task_size * sum(time_list[-remaining_task_size+1:])/len(time_list[-remaining_task_size+1:])
+def calculate_remaining_time(CA, edge_num, t_start, t_end):
+	node_num=len(CA)
+	edge_num_per_node=edge_num/node_num
+	average_time_per_computation=1.0*(t_end-t_start)/edge_num/60
 
 
-
+	remaining_computation_size=0
+	edge_num=edge_num-edge_num_per_node
+	while node_num>2:
+		remaining_computation_size=remaining_computation_size+edge_num
+		edge_num=edge_num-edge_num_per_node
+		if edge_num<0:
+			edge_num=0
+		node_num=node_num-1
+	return remaining_computation_size*average_time_per_computation

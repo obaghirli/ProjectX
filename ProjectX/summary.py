@@ -1,3 +1,4 @@
+import numpy as np
 
 #--COMMUNITY--
 #Quality of communities
@@ -35,6 +36,18 @@ def print_community_stat(community_pool):
 	print "Size of the Smallest Community: %d" %sorted_array[0]
 	print "Size of the Largest Community: %d" %sorted_array[-1]
 	print "Size of the Average Community: %d" %( sum(sorted_array)/len(sorted_array) )
+
+def data_characteristics(A):
+	total_node=len(A)
+	total_edge=np.sum(A)/2
+	average_degree=2*total_edge/total_node # is integer
+	print "\n"
+	print "---Data Characteristics---"
+	print "--------------------------"
+	print "Total Node Number:",total_node
+	print "Total Edge Number:",total_edge
+	print "Average Degree per Node:",average_degree
+	print "----------END-------------\n"
 
 def print_statistics(t_start_algo,t_end_algo,t_start_perf,t_end_perf,Q,community_pool,performance_message):
 	print "\n"

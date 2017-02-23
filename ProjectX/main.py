@@ -11,15 +11,19 @@ import summary
 import ETA
 import multiprocess
 
-
 seed=random.randint(1,1000)
 random.seed(seed)
-
+label=-1
 
 class Community():
 	def __init__(self):
+		self.label=self.assign_label()
 		self.members=[]
 		self.color=( random.uniform(0.3,0.9) , random.uniform(0.3,0.9) , random.uniform(0.3,0.9) ) 
+	def assign_label(self):
+		global label
+		label=label+1
+		return label
 
 
 def initialize(A):
@@ -51,45 +55,50 @@ def calc_dQ(CA,i,j):
 	return dQ
 
 
-def find_best_pair(CA):
+def find_candidate_pairs(CA):
+	(i_array,j_array)=np.where(CA>0)
+	mask=(j_array-i_array)>0
+	i_array=i_array[mask]
+	j_array=j_array[mask]
+	return (i_array,j_array)
+
+def find_best_pair(candidate_pairs,CA):
 	best_pair=[]
 	best_dQ=-1e1000000
-	(row,col)=CA.shape
 	can_merge=False
+	(i_array,j_array)=candidate_pairs
 
-	for i in range(row):
-		check_this=np.where(CA[i,i+1:col]>0)[0]
-		for newj in range(len(check_this)):
-			j=check_this[newj]+i+1
-			dQ=calc_dQ(CA,i,j)
-			if dQ>best_dQ:
-				best_dQ=dQ
-				best_pair=[i,j]
-				can_merge=True
 
+	for element in range(len(i_array)):
+		i=i_array[element]
+		j=j_array[element]
+		dQ=calc_dQ(CA,i,j)
+		if dQ>best_dQ:
+			best_dQ=dQ
+			best_pair=[i,j]
+			can_merge=True
 
 	if can_merge==False:
 		sys.exit( "There is no any possible merge. Hit the Isolated Communities. SYSTEM EXIT!"  )
 	return (best_pair,best_dQ)
 
-
-def find_best_pair_mproc(CA,ret,index_range):
+def find_best_pair_mproc(candidate_pairs,CA,ret,index_range):
 	best_pair=[]
 	best_dQ=-1e1000000
-	(row,col)=CA.shape
 	can_merge=False
 	start_index=index_range[0]
 	end_index=index_range[1]
-	
-	for i in range( start_index,end_index+1):
-		check_this=np.where(CA[i,i+1:col]>0)[0]
-		for newj in range(len(check_this)):
-			j=check_this[newj]+i+1
-			dQ=calc_dQ(CA,i,j)
-			if dQ>best_dQ:
-				best_dQ=dQ
-				best_pair=[i,j]
-				can_merge=True
+	(i_array,j_array)=candidate_pairs
+
+
+	for element in range(start_index,end_index+1):
+		i=i_array[element]
+		j=j_array[element]
+		dQ=calc_dQ(CA,i,j)
+		if dQ>best_dQ:
+			best_dQ=dQ
+			best_pair=[i,j]
+			can_merge=True
 
 	if can_merge==False:
 		best_dQ=-1e1000000
@@ -106,8 +115,12 @@ def update_community_pool(community_pool,best_pair):
 def update_CA(CA,best_pair):
 	(row,col)=CA.shape
 	delete_index=best_pair[1]
-	CA[best_pair[0],:]=CA[best_pair[0],:]+CA[best_pair[1],:]
-	CA[:,best_pair[0]]=CA[:,best_pair[0]]+CA[:,best_pair[1]]
+
+	row_index_to_update=np.where( CA[ best_pair[1] ]>0  ) 
+	CA[best_pair[0],row_index_to_update]=CA[best_pair[0],row_index_to_update]+CA[best_pair[1],row_index_to_update]
+	col_index_to_update=np.where( CA.T[ best_pair[1] ]>0  )
+	CA[col_index_to_update,best_pair[0]]=CA[col_index_to_update,best_pair[0]]+CA[col_index_to_update,best_pair[1]]
+
 
 	mask=np.ones(CA.shape, dtype=np.bool)
 	mask[delete_index]=False
@@ -120,6 +133,49 @@ def extract_project_location():
 	with open("project.location") as f:
 		location=f.readline().strip()
 	return location
+
+
+
+def build_community_pool_from_joins(filename,Qmax):
+	global label
+	label=-1
+	community_pool=[]
+	d={}
+	string_float=str(Qmax)
+	Qmax=float(string_float)
+
+	with open(filename,"r") as file:
+		line=file.readline().strip()
+		while line.split()[0] !="END":
+			[key,value,Q]=line.split()
+			key=int(key)
+			value=int(value)
+			Q=float(Q)
+
+			if Q<=Qmax:
+				if key not in d.keys():
+					if value not in d.keys():
+						d[key]=[key,value]
+					elif value in d.keys():
+						d[key]=[key]+d[value]
+						del d[value]
+				elif key in d.keys():
+					if value not in d.keys():
+						d[key]=d[key]+[value]
+					elif value in d.keys():
+						d[key]=d[key]+d[value]
+						del d[value]
+
+			if Q==Qmax:
+				break
+			line=file.readline().strip()
+				
+	for key in d.keys():
+		community=Community()
+		community.members=list(set(d[key]))
+		community_pool.append(community)
+
+	return community_pool
 
 
 if __name__=="__main__":
@@ -167,7 +223,7 @@ if __name__=="__main__":
 		print "OK"
 	else:
 		print "Loading GN Benchmark Dataset... ",
-		A=np.array(benchmark.gn(project_location))
+		A=benchmark.gn(project_location)
 		GN_CHOSEN=True
 		print "OK"
 
@@ -176,58 +232,77 @@ if __name__=="__main__":
 
 
 	total_edge=np.sum(A)/2
-	t_start_algo=time.time()
+	summary.data_characteristics(A)
+
 
 	print "Initializing Communities... "
 	curr_community_pool=initialize(A)
-	community_pool=copy.deepcopy( curr_community_pool )
-	
+	print "OK"
 	CA=0.5*A/total_edge
+	print "Calculating Initial Q..."
 	curr_Q=calc_init_Q(CA)
 	Q=curr_Q
 	print "OK"
 
-	print "Entering Main Loop."
-	print "Time Remains Untill End of the Core Algorithm:... "
-	time_list=[]
-	total_task_size=len(CA)
-	val_curr_Q=[]
-	size_curr_community_pool=[]
-	val_curr_Q.append(curr_Q)
-	size_curr_community_pool.append(len(curr_community_pool))
 
+	val_curr_Q=[] #PLot Q
+	size_curr_community_pool=[] #Plot Q
+	val_curr_Q.append(curr_Q) #PLot Q
+	size_curr_community_pool.append(len(curr_community_pool)) #Plot_Q
+
+	file_joins=open("joins.txt","w")
+
+	print "Entering Main Loop.\n"
+	t_start_algo=time.time()
 
 	while len(CA)>1:
 
 		t_start_loop=time.time()
-
+		print "--------------------"
+		print "Finding Best Pair..."
 		if MPROC==True:
-			return_find_best_pair_mproc=multiprocess.multiprocess( find_best_pair_mproc,(CA,),cpu )
-			(best_pair,best_dQ)=multiprocess.handle_find_best_pair(return_find_best_pair_mproc)
+			candidate_pairs=find_candidate_pairs(CA)
+			return_find_best_pair_mproc=multiprocess.multiprocess_best_pair( find_best_pair_mproc,(candidate_pairs,CA),cpu )
+			(best_pair,best_dQ)=multiprocess.handle_return_find_best_pair(return_find_best_pair_mproc)
 		elif MPROC==False:
-			(best_pair,best_dQ)=find_best_pair(CA)
-
-		CA=update_CA(CA,best_pair)
-		curr_community_pool=update_community_pool(curr_community_pool,best_pair)
+			candidate_pairs=find_candidate_pairs(CA)
+			(best_pair,best_dQ)=find_best_pair(candidate_pairs,CA)
+		print "OK"
 		curr_Q=curr_Q+best_dQ
 
+		content_joins=str( curr_community_pool[ best_pair[0] ].label )+"\t"+str( curr_community_pool[ best_pair[1] ].label )+"\t"+str(curr_Q)+"\n"
+		file_joins.write(content_joins)
+
+		print "Updating CA matrix..."
+		CA=update_CA(CA,best_pair)
+		print "OK"
+		print "Updating community pool..."
+		curr_community_pool=update_community_pool(curr_community_pool,best_pair)
+		print "OK"
+
 		if curr_Q>Q:
-			del community_pool
-			community_pool=copy.deepcopy(curr_community_pool)
 			Q=curr_Q
 
 		t_end_loop=time.time()
+
 		val_curr_Q.append(curr_Q)
 		size_curr_community_pool.append(len(curr_community_pool))
-		eta=ETA.calculate_remaining_time(total_task_size,CA,t_start_loop,t_end_loop,time_list)
-		print "%.4f minutes..." %eta,
+		eta= ETA.calculate_remaining_time(CA, len(candidate_pairs[0]),t_start_loop,t_end_loop)
+		print "Time remaining: %.6f minutes..." %eta,
 		tab=random.randint(11,17)
 		print tab*"\t","+"
+		print "---------------------\n"
+	file_joins.write("END")
+	file_joins.close()
 
-
-	print "Core Algorithm: Done\n"
-
+	print "---------------------"
+	print "Core Algorithm: Done"
+	print "---------------------\n"
 	t_end_algo=time.time()
+
+	print "Building Community pool from Joins.txt..."
+	community_pool=build_community_pool_from_joins("joins.txt",Q)
+	print "OK"
 
 	t_start_perf=time.time()
 	performance_message="Performance Evaluation is only available for GN Benchmark Datasets."
@@ -237,7 +312,7 @@ if __name__=="__main__":
 		print "OK"
 	t_end_perf=time.time()
 
-	print "Calculating Statistics."
+
 	summary.print_statistics(t_start_algo,t_end_algo,t_start_perf,t_end_perf,Q,community_pool,performance_message)
 
 

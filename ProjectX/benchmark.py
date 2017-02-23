@@ -141,4 +141,3 @@ def arxivhepth():
 		ARXIVHEPTH[ stream[i,1] ,stream[i,0] ]=1
 
 	return ARXIVHEPTH
-
