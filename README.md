@@ -11,7 +11,9 @@ This command will choose Dolphin network dataset and suppress graphics at the en
 then you get the advantage of Multiprocessing, value being the number of requested cpu. This is recommended for large datasets.  
 ## Version
 Version No: _03   /  previous releases: _00, _01, _02
+
 Version_00: Original submission
+
 Version_01: Improvements
 * deleting row/col from a matrix in update_CA() function is much more memory efficient
 * find_best_pair() function is much faster.
