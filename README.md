@@ -1,4 +1,5 @@
 # ProjectX
+![alt tag](cover_01.png)
 ## Description 
 ProjectX is part of a larger project. ProjectX uses several real world and artificial network datasets, and execute community detection algorithm 
 [Fast algorithm for detecting community structure in networks by M.E.J Newman](https://arxiv.org/pdf/cond-mat/0309508.pdf) on them.
