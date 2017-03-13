@@ -47,7 +47,29 @@ def data_characteristics(A):
 	print "Total Node Number:",total_node
 	print "Total Edge Number:",total_edge
 	print "Average Degree per Node:",average_degree
-	print "----------END-------------\n"
+	print "----------END-------------"
+
+
+def dir_data_characteristics(dir_A):
+
+	node_number=len(dir_A)
+	edge_number=np.sum(dir_A)
+	average_degree=edge_number/node_number
+	min_out_degree=np.min(np.sum(dir_A, axis=1))
+	max_out_degree=np.max(np.sum(dir_A, axis=1))
+	min_in_degree=np.min(np.sum(dir_A, axis=0))
+	max_in_degree=np.max(np.sum(dir_A, axis=0))
+
+	print "\n---Data Characteristics---"
+	print "Total Node Number:",node_number
+	print "Total Edge Number:",edge_number
+	print "Average Degree per Node:",average_degree
+	print "Min Out Degree:",min_out_degree
+	print "Max Out Degree:",max_out_degree
+	print "Min In Degree:",min_in_degree
+	print "Max In Degree: ",max_in_degree
+	print "-------------END---------"
+
 
 def print_statistics(t_start_algo,t_end_algo,t_start_perf,t_end_perf,Q,community_pool,performance_message):
 	print "\n"
@@ -69,4 +91,11 @@ def print_statistics(t_start_algo,t_end_algo,t_start_perf,t_end_perf,Q,community
 	print "---------"
 	print "---END---"
 
+def handle_data_characteristics_and_statistics(dir_A,A,JSON_CHOSEN,t_start_algo,t_end_algo,t_start_perf,t_end_perf,Q,community_pool,performance_message):
 
+	if JSON_CHOSEN==False:
+		data_characteristics(A)
+	elif JSON_CHOSEN==True:
+		dir_data_characteristics(dir_A)
+
+	print_statistics(t_start_algo,t_end_algo,t_start_perf,t_end_perf,Q,community_pool,performance_message)

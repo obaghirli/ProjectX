@@ -2,8 +2,14 @@
 import numpy as np
 
 
-def true_membership(project_location):
-	with open(project_location+"ProjectX/benchmark/community.dat") as etalon:
+def true_membership(project_location, JSON_CHOSEN):
+
+	if JSON_CHOSEN==False:
+		file_path=project_location+"ProjectX/benchmark/community.dat"
+	elif JSON_CHOSEN==True:
+		file_path="community_assignment.dat"
+
+	with open(file_path) as etalon:
 		lines=etalon.readlines()
 	clean_lines=[]
 	lines=[line.strip() for line in lines]
@@ -14,8 +20,12 @@ def true_membership(project_location):
 	dictionary={}
 	for i in range(size):
 		[node,community]=clean_lines[i].split()
-		node=int(node)-1
-		community=int(community)-1
+		if JSON_CHOSEN==False:
+			node=int(node)-1
+			community=int(community)-1
+		elif JSON_CHOSEN==True:
+			node=int(node)
+			community=int(community)
 		if community not in dictionary:
 			dictionary[community]=list()
 		dictionary[community].append(node)
@@ -57,8 +67,24 @@ def performance(dictionary,community_pool,total_node):
 	return msg
 
 
-def performance_evaluation(community_pool,project_location):
-	(dictionary,total_node)=true_membership(project_location)
+def performance_evaluation(community_pool,project_location, JSON_CHOSEN):
+	(dictionary,total_node)=true_membership(project_location,JSON_CHOSEN)
 	return performance(dictionary,community_pool,total_node)
 
+
+
+def handle_performance(NO_PERF, GN_CHOSEN, JSON_CHOSEN, community_pool, project_location):
+	
+	if NO_PERF==False:
+		performance_message="Performance Evaluation is only available for PAPER [DATA.JSON] and GN Benchmark Datasets."
+		if GN_CHOSEN==True or JSON_CHOSEN==True:
+			print "Performance Evaluation in progress... "
+			performance_message=performance_evaluation(community_pool,project_location,JSON_CHOSEN)
+			NO_PERF=True
+			print "OK"
+	
+	elif NO_PERF==True:
+		performance_message="Performance Evaluation is disabled by -NOPERF argument either by the user or algorithm.\nNote: Performance Evaluation is only available for the first round."
+	
+	return performance_message
 #--------------------------------------------------------------------------------------------------

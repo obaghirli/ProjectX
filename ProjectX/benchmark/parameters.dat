@@ -29,14 +29,14 @@
 ###############################################################################
 
 
-1000 	# number of nodes
+300 	# number of nodes
 8	# average degree
 8	# maximum degree
 2.2	# exponent for the degree distribution (but, in this case, it does not matter)
 2.2	# exponent for the community size distribution (but, in this case, it does not matter)
 0.05	# mixing parameter
-13	# minimum for the community sizes
-18	# maximum for the community sizes
+10	# minimum for the community sizes
+12	# maximum for the community sizes
 
 
 ################################################################################

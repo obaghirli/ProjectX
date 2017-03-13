@@ -178,17 +178,18 @@ def build_community_pool_from_joins(filename,Qmax):
 	return community_pool
 
 
-if __name__=="__main__":
 
-	project_location=extract_project_location()
+def dir_to_undir_A(dir_A):
+	A=dir_A+dir_A.T
+	return A
 
-	arg_list=[]
-	GN_CHOSEN=False
-	NO_DRAW=False
+
+def intro(arg_list, GN_CHOSEN, JSON_CHOSEN, NO_DRAW, NO_PERF):
+
 	MPROC=False
 	cpu=1
 
-
+	project_location=extract_project_location()
 
 	for arg in sys.argv:
 		arg_list.append(arg.upper())
@@ -199,42 +200,72 @@ if __name__=="__main__":
 	if "-GN" in arg_list:
 		print "Loading GN Benchmark Dataset... "
 		A=benchmark.gn(project_location)
+		dir_A=None
 		GN_CHOSEN=True
 		print "OK"
 	elif "-KARATE" in arg_list:
 		print "Loading KARATE Dataset... "
 		A=benchmark.karate_club()
+		dir_A=None
 		print "OK"
 	elif "-FOOTBALL" in arg_list:
 		print "Loading FOOTBALL Dataset... "
 		A=benchmark.football()
+		dir_A=None
 		print "OK"
 	elif "-DOLPHIN" in arg_list:
 		print "Loading DOLPHIN Dataset... "
 		A=benchmark.dolphin()
+		dir_A=None
 		print "OK"
 	elif "-ARXIVHEPTH" in arg_list:
 		print "Loading ARXIVHEPTH Dataset... "
 		A=benchmark.arxivhepth()
+		dir_A=None
 		print "OK"
 	elif "-TEST" in arg_list:
 		print "Loading TEST Dataset... "
 		A=benchmark.TEST
+		dir_A=None
 		print "OK"
-	else:
-		print "Loading GN Benchmark Dataset... ",
-		A=benchmark.gn(project_location)
-		GN_CHOSEN=True
+	elif "-JSON" in arg_list:
+		print "Loading Paper Dataset [data.json <- created by dirnetgen.py]... "
+
+		for position,arg in enumerate(arg_list):
+			if arg=="-JSON":
+				json_file_size=int(arg_list[position+1])
+
+		dir_A=benchmark.parse_json_create_dir_A("data.json", json_file_size) # 500 [0...499] is the total paper number in the data.json, you need to know it beforehand
 		print "OK"
+		print "Converting to undirected data... "
+		A=dir_to_undir_A(dir_A)
+		JSON_CHOSEN=True
+		print "OK"
+
 
 	if "-NODRAW" in arg_list:
 		NO_DRAW=True
 
+	if "-NOPERF" in arg_list:
+		NO_PERF=True
+
+
+	if JSON_CHOSEN==False:
+		summary.data_characteristics(A)
+		print "\n"
+	elif JSON_CHOSEN==True:
+		summary.dir_data_characteristics(dir_A)
+		print "\n"
+
+
+	return (A, dir_A, GN_CHOSEN, JSON_CHOSEN, NO_DRAW, NO_PERF, MPROC,cpu, project_location)
+
+
+
+
+def run_community_detection(A,MPROC,cpu):
 
 	total_edge=np.sum(A)/2
-	summary.data_characteristics(A)
-
-
 	print "Initializing Communities... "
 	curr_community_pool=initialize(A)
 	print "OK"
@@ -300,28 +331,39 @@ if __name__=="__main__":
 	print "---------------------\n"
 	t_end_algo=time.time()
 
-	print "Building Community pool from Joins.txt..."
+	print "Building Community pool from joins.txt..."
 	community_pool=build_community_pool_from_joins("joins.txt",Q)
 	print "OK"
 
+	return (community_pool, Q, val_curr_Q, size_curr_community_pool, t_start_algo, t_end_algo)
+
+
+
+def handle_perf_data_char_stats_draw(NO_PERF, GN_CHOSEN, JSON_CHOSEN, community_pool, project_location, dir_A, A, t_start_algo,t_end_algo, Q):
 	t_start_perf=time.time()
-	performance_message="Performance Evaluation is only available for GN Benchmark Datasets."
-	if GN_CHOSEN==True:
-		print "Performance Evaluation in progress... "
-		performance_message=performance.performance_evaluation(community_pool,project_location)
-		print "OK"
+	performance_message=performance.handle_performance(NO_PERF, GN_CHOSEN, JSON_CHOSEN, community_pool, project_location)
 	t_end_perf=time.time()
+	summary.handle_data_characteristics_and_statistics(dir_A,A,JSON_CHOSEN,t_start_algo,t_end_algo,t_start_perf,t_end_perf,Q,community_pool,performance_message)
+	draw.handle_draw(NO_DRAW, JSON_CHOSEN, dir_A, A, community_pool, val_curr_Q, size_curr_community_pool,313)
 
 
-	summary.print_statistics(t_start_algo,t_end_algo,t_start_perf,t_end_perf,Q,community_pool,performance_message)
+
+if __name__=="__main__":
+
+	arg_list=[]
+	GN_CHOSEN=False
+	JSON_CHOSEN=False
+	NO_DRAW=False
+	NO_PERF=False
 
 
-	if NO_DRAW==True:
-		sys.exit()
+	(A, dir_A, GN_CHOSEN, JSON_CHOSEN, NO_DRAW, NO_PERF, MPROC,cpu, project_location)=intro(arg_list, GN_CHOSEN, JSON_CHOSEN, NO_DRAW, NO_PERF)
 
-	print "Please wait for the graphs."
-	draw.draw_graph_adj(A,seed)
-	draw.draw_graph_comm(A,community_pool,seed)
-	draw.plot_Q(val_curr_Q,size_curr_community_pool)
+	(community_pool, Q,val_curr_Q,size_curr_community_pool, t_start_algo, t_end_algo)=run_community_detection(A,MPROC,cpu)
+
+	handle_perf_data_char_stats_draw(NO_PERF, GN_CHOSEN, JSON_CHOSEN, community_pool, project_location, dir_A, A, t_start_algo,t_end_algo, Q)
+
+
+
 
 

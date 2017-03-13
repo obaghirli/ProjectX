@@ -1,4 +1,5 @@
 import numpy as np
+import json
 
 
    #     1   2   3   4   5   6   7   8   9   10   11   12   13
@@ -141,3 +142,17 @@ def arxivhepth():
 		ARXIVHEPTH[ stream[i,1] ,stream[i,0] ]=1
 
 	return ARXIVHEPTH
+
+
+def parse_json_create_dir_A(json_data_filename, total_entry_number):
+
+
+	dir_A=np.zeros((total_entry_number, total_entry_number)).astype("int8")
+
+	with open(json_data_filename,'r') as json_data:
+		records=json.load(json_data)
+
+	for record in records["Papers"]:
+		dir_A[ record["_id"], record["references"] ]=1
+
+	return dir_A 

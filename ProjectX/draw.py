@@ -2,6 +2,7 @@ import igraph
 import random
 import numpy as np
 import matplotlib.pyplot as plt
+import sys
 
 
 def plot_adj_matrix(A):
@@ -29,6 +30,27 @@ def plot_Q(val_curr_Q,size_curr_community_pool):
 	plt.show()
 
 
+def draw_graph_dir_adj(dir_A,seed):
+
+	random.seed(seed)
+	g=igraph.Graph(directed=True)
+	num=len(dir_A)
+	g.add_vertices(num)
+
+	for i in range(num):
+		for j in range(num):
+			if dir_A[i,j]>0:
+				g.add_edges( [(i,j)] )
+
+	vs=igraph.VertexSeq(g)
+	es=igraph.EdgeSeq(g)
+	vs["label"]=np.arange(num)
+
+
+	layout=g.layout("fruchterman_reingold")
+	igraph.plot(g,layout=layout)
+
+
 def draw_graph_adj(A,seed):
 
 	random.seed(seed)
@@ -44,6 +66,32 @@ def draw_graph_adj(A,seed):
 	vs=igraph.VertexSeq(g)
 	es=igraph.EdgeSeq(g)
 	vs["label"]=np.arange(num)
+
+	layout=g.layout("fruchterman_reingold")
+	igraph.plot(g,layout=layout)
+
+
+def draw_graph_dir_comm(dir_A,community_pool,seed):
+
+	random.seed(seed)
+	g=igraph.Graph(directed=True)
+	num=len(dir_A)
+	g.add_vertices(num)
+
+	for i in range(num):
+		for j in range(num):
+			if dir_A[i,j]>0:
+				g.add_edges( [(i,j)] )
+
+	vs=igraph.VertexSeq(g)
+	es=igraph.EdgeSeq(g)
+	vs["label"]=np.arange(num)
+
+	for c in community_pool:
+		memlen=len(c.members)
+		for i in range(memlen):
+			vs[c.members[i]]["color"]=c.color
+
 
 	layout=g.layout("fruchterman_reingold")
 	igraph.plot(g,layout=layout)
@@ -73,3 +121,20 @@ def draw_graph_comm(A,community_pool,seed):
 
 	layout=g.layout("fruchterman_reingold")
 	igraph.plot(g,layout=layout)
+
+
+def handle_draw(NO_DRAW, JSON_CHOSEN, dir_A, A, community_pool, val_curr_Q, size_curr_community_pool,draw_seed):
+
+	if NO_DRAW==True:
+		sys.exit()
+
+	print "Please wait for the graphs."
+
+	if JSON_CHOSEN==False:
+		draw_graph_adj(A,draw_seed)
+		draw_graph_comm(A,community_pool,draw_seed)
+		plot_Q(val_curr_Q,size_curr_community_pool)
+	elif JSON_CHOSEN==True:
+		draw_graph_dir_adj(dir_A,draw_seed)
+		draw_graph_dir_comm(dir_A,community_pool,draw_seed)
+		plot_Q(val_curr_Q,size_curr_community_pool)	

@@ -7,10 +7,13 @@ def handle_mproc(arg_list):
 	global MPROC
 	cpu=1
 	CPU_NUM_DEFINED=False
-	for arg in arg_list:
-		if arg.isdigit():
-			cpu_requested=int(arg)
+
+	for position,arg in enumerate(arg_list):
+		if arg=="-MPROC":
+			cpu_requested=int( arg_list[position+1] )
 			CPU_NUM_DEFINED=True
+
+
 	if CPU_NUM_DEFINED==False:
 		sys.exit("Please refine your request. e.g. -mproc PositiveInteger")
 
