@@ -106,7 +106,7 @@ def find_best_pair_mproc(candidate_pairs,CA,ret,index_range):
 	ret.put( (best_pair,best_dQ) )
 
 
-
+# Hello
 def update_community_pool(community_pool,best_pair):
 	community_pool[best_pair[0]].members=community_pool[best_pair[0]].members+community_pool[best_pair[1]].members
 	del community_pool[best_pair[1]]
