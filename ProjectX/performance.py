@@ -2,10 +2,10 @@
 import numpy as np
 
 
-def true_membership(project_location, JSON_CHOSEN):
+def true_membership(JSON_CHOSEN):
 
 	if JSON_CHOSEN==False:
-		file_path=project_location+"ProjectX/benchmark/community.dat"
+		file_path="benchmark/community.dat"
 	elif JSON_CHOSEN==True:
 		file_path="community_assignment.dat"
 
@@ -67,19 +67,19 @@ def performance(dictionary,community_pool,total_node):
 	return msg
 
 
-def performance_evaluation(community_pool,project_location, JSON_CHOSEN):
-	(dictionary,total_node)=true_membership(project_location,JSON_CHOSEN)
+def performance_evaluation(community_pool, JSON_CHOSEN):
+	(dictionary,total_node)=true_membership(JSON_CHOSEN)
 	return performance(dictionary,community_pool,total_node)
 
 
 
-def handle_performance(NO_PERF, GN_CHOSEN, JSON_CHOSEN, community_pool, project_location):
+def handle_performance(NO_PERF, GN_CHOSEN, JSON_CHOSEN, community_pool):
 	
 	if NO_PERF==False:
 		performance_message="Performance Evaluation is only available for PAPER [DATA.JSON] and GN Benchmark Datasets."
 		if GN_CHOSEN==True or JSON_CHOSEN==True:
 			print "Performance Evaluation in progress... "
-			performance_message=performance_evaluation(community_pool,project_location,JSON_CHOSEN)
+			performance_message=performance_evaluation(community_pool,JSON_CHOSEN)
 			NO_PERF=True
 			print "OK"
 	

@@ -129,12 +129,6 @@ def update_CA(CA,best_pair):
 	return CA[mask].reshape((row-1,col-1))
 
 
-def extract_project_location():
-	with open("project.location") as f:
-		location=f.readline().strip()
-	return location
-
-
 
 def build_community_pool_from_joins(filename,Qmax):
 	global label
@@ -189,7 +183,6 @@ def intro(arg_list, GN_CHOSEN, JSON_CHOSEN, NO_DRAW, NO_PERF):
 	MPROC=False
 	cpu=1
 
-	project_location=extract_project_location()
 
 	for arg in sys.argv:
 		arg_list.append(arg.upper())
@@ -199,7 +192,7 @@ def intro(arg_list, GN_CHOSEN, JSON_CHOSEN, NO_DRAW, NO_PERF):
 
 	if "-GN" in arg_list:
 		print "Loading GN Benchmark Dataset... "
-		A=benchmark.gn(project_location)
+		A=benchmark.gn()
 		dir_A=None
 		GN_CHOSEN=True
 		print "OK"
@@ -258,7 +251,7 @@ def intro(arg_list, GN_CHOSEN, JSON_CHOSEN, NO_DRAW, NO_PERF):
 		print "\n"
 
 
-	return (A, dir_A, GN_CHOSEN, JSON_CHOSEN, NO_DRAW, NO_PERF, MPROC,cpu, project_location)
+	return (A, dir_A, GN_CHOSEN, JSON_CHOSEN, NO_DRAW, NO_PERF, MPROC,cpu)
 
 
 
@@ -338,10 +331,9 @@ def run_community_detection(A,MPROC,cpu):
 	return (community_pool, Q, val_curr_Q, size_curr_community_pool, t_start_algo, t_end_algo)
 
 
-
-def handle_perf_data_char_stats_draw(NO_PERF, GN_CHOSEN, JSON_CHOSEN, community_pool, project_location, dir_A, A, t_start_algo,t_end_algo, Q):
+def handle_perf_data_char_stats_draw(NO_PERF, GN_CHOSEN, JSON_CHOSEN, community_pool, dir_A, A, t_start_algo,t_end_algo, Q):
 	t_start_perf=time.time()
-	performance_message=performance.handle_performance(NO_PERF, GN_CHOSEN, JSON_CHOSEN, community_pool, project_location)
+	performance_message=performance.handle_performance(NO_PERF, GN_CHOSEN, JSON_CHOSEN, community_pool)
 	t_end_perf=time.time()
 	summary.handle_data_characteristics_and_statistics(dir_A,A,JSON_CHOSEN,t_start_algo,t_end_algo,t_start_perf,t_end_perf,Q,community_pool,performance_message)
 	draw.handle_draw(NO_DRAW, JSON_CHOSEN, dir_A, A, community_pool, val_curr_Q, size_curr_community_pool,313)
@@ -357,11 +349,11 @@ if __name__=="__main__":
 	NO_PERF=False
 
 
-	(A, dir_A, GN_CHOSEN, JSON_CHOSEN, NO_DRAW, NO_PERF, MPROC,cpu, project_location)=intro(arg_list, GN_CHOSEN, JSON_CHOSEN, NO_DRAW, NO_PERF)
+	(A, dir_A, GN_CHOSEN, JSON_CHOSEN, NO_DRAW, NO_PERF, MPROC,cpu)=intro(arg_list, GN_CHOSEN, JSON_CHOSEN, NO_DRAW, NO_PERF)
 
 	(community_pool, Q,val_curr_Q,size_curr_community_pool, t_start_algo, t_end_algo)=run_community_detection(A,MPROC,cpu)
 
-	handle_perf_data_char_stats_draw(NO_PERF, GN_CHOSEN, JSON_CHOSEN, community_pool, project_location, dir_A, A, t_start_algo,t_end_algo, Q)
+	handle_perf_data_char_stats_draw(NO_PERF, GN_CHOSEN, JSON_CHOSEN, community_pool, dir_A, A, t_start_algo,t_end_algo, Q)
 
 
 

@@ -90,9 +90,9 @@ def dolphin():
 	return DOLPHIN
 
 
-def gn(project_location):
+def gn():
 	clean_lines=[]
-	with open(project_location+'ProjectX/benchmark/network.dat') as f:
+	with open("benchmark/network.dat") as f:
 		lines=f.readlines()
 	lines=[x.strip() for x in lines]
 	for i in range(len(lines)):
