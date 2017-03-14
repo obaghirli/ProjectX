@@ -72,19 +72,4 @@ def performance_evaluation(community_pool, JSON_CHOSEN):
 	return performance(dictionary,community_pool,total_node)
 
 
-
-def handle_performance(NO_PERF, GN_CHOSEN, JSON_CHOSEN, community_pool):
-	
-	if NO_PERF==False:
-		performance_message="Performance Evaluation is only available for PAPER [DATA.JSON] and GN Benchmark Datasets."
-		if GN_CHOSEN==True or JSON_CHOSEN==True:
-			print "Performance Evaluation in progress... "
-			performance_message=performance_evaluation(community_pool,JSON_CHOSEN)
-			NO_PERF=True
-			print "OK"
-	
-	elif NO_PERF==True:
-		performance_message="Performance Evaluation is disabled by -NOPERF argument either by the user or algorithm.\nNote: Performance Evaluation is only available for the first round."
-	
-	return performance_message
 #--------------------------------------------------------------------------------------------------

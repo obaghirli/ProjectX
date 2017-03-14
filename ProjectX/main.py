@@ -11,8 +11,9 @@ import summary
 import ETA
 import multiprocess
 
-seed=random.randint(1,1000)
+seed=random.randint(1,2000)
 random.seed(seed)
+
 label=-1
 
 class Community():
@@ -168,7 +169,7 @@ def build_community_pool_from_joins(filename,Qmax):
 		community=Community()
 		community.members=list(set(d[key]))
 		community_pool.append(community)
-
+	label=-1
 	return community_pool
 
 
@@ -250,7 +251,6 @@ def intro(arg_list, GN_CHOSEN, JSON_CHOSEN, NO_DRAW, NO_PERF):
 		summary.dir_data_characteristics(dir_A)
 		print "\n"
 
-
 	return (A, dir_A, GN_CHOSEN, JSON_CHOSEN, NO_DRAW, NO_PERF, MPROC,cpu)
 
 
@@ -331,16 +331,95 @@ def run_community_detection(A,MPROC,cpu):
 	return (community_pool, Q, val_curr_Q, size_curr_community_pool, t_start_algo, t_end_algo)
 
 
-def handle_perf_data_char_stats_draw(NO_PERF, GN_CHOSEN, JSON_CHOSEN, community_pool, dir_A, A, t_start_algo,t_end_algo, Q):
-	t_start_perf=time.time()
-	performance_message=performance.handle_performance(NO_PERF, GN_CHOSEN, JSON_CHOSEN, community_pool)
-	t_end_perf=time.time()
-	summary.handle_data_characteristics_and_statistics(dir_A,A,JSON_CHOSEN,t_start_algo,t_end_algo,t_start_perf,t_end_perf,Q,community_pool,performance_message)
-	draw.handle_draw(NO_DRAW, JSON_CHOSEN, dir_A, A, community_pool, val_curr_Q, size_curr_community_pool,313)
+def handle_performance( GN_CHOSEN, JSON_CHOSEN, community_pool):
+	global NO_PERF
+	if NO_PERF==False:
+		performance_message="Performance Evaluation is only available for PAPER [DATA.JSON] and GN Benchmark Datasets."
+		if GN_CHOSEN==True or JSON_CHOSEN==True:
+			print "Performance Evaluation in progress... "
+			performance_message=performance.performance_evaluation(community_pool,JSON_CHOSEN)
+			NO_PERF=True
+			print "OK"
+	
+	elif NO_PERF==True:
+		performance_message="Performance Evaluation is disabled by -NOPERF argument either by the user or algorithm.\nNote: Performance Evaluation is only available for the first round."
+	
+	return performance_message
+
+def handle_data_characteristics(dir_A,A,JSON_CHOSEN):
+
+	if JSON_CHOSEN==False:
+		summary.data_characteristics(A)
+	elif JSON_CHOSEN==True:
+		summary.dir_data_characteristics(dir_A)
+
+	
+
+def handle_draw(NO_DRAW, JSON_CHOSEN, dir_A, A, community_pool, val_curr_Q, size_curr_community_pool,draw_seed):
+
+	if NO_DRAW==False:
+
+		print "Please wait for the graphs."
+
+		if JSON_CHOSEN==False:
+			draw.draw_graph_adj(A,draw_seed)
+			draw.draw_graph_comm(A,community_pool,draw_seed)
+			draw.plot_Q(val_curr_Q,size_curr_community_pool)
+		elif JSON_CHOSEN==True:
+			draw.draw_graph_dir_adj(dir_A,draw_seed)
+			draw.draw_graph_dir_comm(dir_A,community_pool,draw_seed)
+			draw.plot_Q(val_curr_Q,size_curr_community_pool)	
+
+# calculates page ranks of vertices in the given graph: AdjMat, returns the list of pageranks.
+def calculate_pageranks(AdjMat):
+
+	# convert AdjMat to igraph object, we should avoid such conversions, it is only for testing purposes. In future we consider implementing Igraph stuff ourselves
+	baseGraph=Graph()
+	baseGraph.add_vertices(len(AdjMat))
+
+	for i in range(len(AdjMat)):
+		for j in range(len(AdjMat)):
+			if AdjMat[i][j]>0: # graph is possibly weighted
+				baseGraph.add_edge(i,j,weight=AdjMat[i][j])
+
+	
+	pageranks=baseGraph.pagerank(weights='weight')
+	pageranks = np.array(pageranks)
+	return pageranks
+
+
+# calculates new network where vertices are communities from the network below, returns the new adjacency matrix of communities.
+
+def create_new_network_from_the_base(community_pool,AdjMat):
+	
+	new_AdjMat=np.zeros((len(community_pool), len(community_pool)))
+	
+	for i in range(len(community_pool)):
+		for j in range(i+1,len(community_pool)):
+		
+			#check if there are edges from community_i to community_j, if yes add the edge to the new adjacency matrix
+			# I assume A[i][j]>0 if there is an edge with some weight from vertex i to j!
+			
+			B=AdjMat[community_pool[i].members,:]
+			
+			C=B[:,community_pool[j].members]
+			new_AdjMat[i][j]=np.sum(C)
+			
+			
+			# check if there is an edge from community_j to community_i, if yes add the edge
+			
+			B=AdjMat[community_pool[j].members,:]
+			C=B[:,community_pool[i].members]
+			new_AdjMat[j][i]=np.sum(C)
+
+	return new_AdjMat
+
+
 
 
 
 if __name__=="__main__":
+
 
 	arg_list=[]
 	GN_CHOSEN=False
@@ -351,9 +430,49 @@ if __name__=="__main__":
 
 	(A, dir_A, GN_CHOSEN, JSON_CHOSEN, NO_DRAW, NO_PERF, MPROC,cpu)=intro(arg_list, GN_CHOSEN, JSON_CHOSEN, NO_DRAW, NO_PERF)
 
+
+	handle_data_characteristics(dir_A,A,JSON_CHOSEN)
+	print "\n"
+
 	(community_pool, Q,val_curr_Q,size_curr_community_pool, t_start_algo, t_end_algo)=run_community_detection(A,MPROC,cpu)
 
-	handle_perf_data_char_stats_draw(NO_PERF, GN_CHOSEN, JSON_CHOSEN, community_pool, dir_A, A, t_start_algo,t_end_algo, Q)
+	t_start_perf=time.time()
+	performance_message=handle_performance( GN_CHOSEN, JSON_CHOSEN, community_pool)
+	t_end_perf=time.time()
+	handle_data_characteristics(dir_A,A,JSON_CHOSEN)
+	summary.print_statistics(t_start_algo,t_end_algo,t_start_perf,t_end_perf,Q,community_pool,performance_message)
+	handle_draw(NO_DRAW, JSON_CHOSEN, dir_A, A, community_pool, val_curr_Q, size_curr_community_pool,313)
+
+	print "##################################################################################################"
+
+	if JSON_CHOSEN==True:
+		dir_A=create_new_network_from_the_base(community_pool,dir_A)
+		A=dir_to_undir_A(dir_A)
+	else:
+		A=create_new_network_from_the_base(community_pool,A)
+
+
+	while len(community_pool)>1:
+
+		handle_data_characteristics(dir_A,A,JSON_CHOSEN)
+		print "\n"
+
+		(community_pool, Q,val_curr_Q,size_curr_community_pool, t_start_algo, t_end_algo)=run_community_detection(A,MPROC,cpu)
+
+		t_start_perf=time.time()
+		performance_message=handle_performance( GN_CHOSEN, JSON_CHOSEN, community_pool)
+		t_end_perf=time.time()
+		handle_data_characteristics(dir_A,A,JSON_CHOSEN)
+		summary.print_statistics(t_start_algo,t_end_algo,t_start_perf,t_end_perf,Q,community_pool,performance_message)
+		handle_draw(NO_DRAW, JSON_CHOSEN, dir_A, A, community_pool, val_curr_Q, size_curr_community_pool,313)
+
+		print "##################################################################################################"
+
+		if JSON_CHOSEN==True:
+			dir_A=create_new_network_from_the_base(community_pool,dir_A)
+			A=dir_to_undir_A(dir_A)
+		else:
+			A=create_new_network_from_the_base(community_pool,A)
 
 
 

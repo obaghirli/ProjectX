@@ -91,11 +91,3 @@ def print_statistics(t_start_algo,t_end_algo,t_start_perf,t_end_perf,Q,community
 	print "---------"
 	print "---END---"
 
-def handle_data_characteristics_and_statistics(dir_A,A,JSON_CHOSEN,t_start_algo,t_end_algo,t_start_perf,t_end_perf,Q,community_pool,performance_message):
-
-	if JSON_CHOSEN==False:
-		data_characteristics(A)
-	elif JSON_CHOSEN==True:
-		dir_data_characteristics(dir_A)
-
-	print_statistics(t_start_algo,t_end_algo,t_start_perf,t_end_perf,Q,community_pool,performance_message)
