@@ -1,0 +1,41 @@
+
+---Data Characteristics---
+---Original Data---
+Total Node Number: 500
+Total Edge Number: 2306
+Average Degree per Node: 4
+Min Out Degree: 2
+Max Out Degree: 9
+Min In Degree: 0
+Max In Degree: 12
+-------------END---------
+
+---Data Characteristics---
+---Detecting INITIAL Communities---
+--------------------------
+Total Node Number: 500
+Total Edge Number: 2306
+Average Degree per Node: 9
+----------END-------------
+
+---Community Statistics---
+---Detecting INITIAL Communities---
+--------------------------
+Quality Factor: 0.831344699035
+Total Number of Communities: 11
+Size of the Smallest Community: 25
+Size of the Largest Community: 74
+Size of the Average Community: 45
+---------
+---END---
+
+---Community Statistics---
+---Going Downwad---
+--------------------------
+Quality Factor: Not Available
+Total Number of Communities: 14
+Size of the Smallest Community: 24
+Size of the Largest Community: 50
+Size of the Average Community: 35
+---------
+---END---

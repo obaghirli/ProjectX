@@ -122,18 +122,3 @@ def draw_graph_comm(A,community_pool,seed):
 	layout=g.layout("fruchterman_reingold")
 	igraph.plot(g,layout=layout)
 
-
-def handle_draw(NO_DRAW, JSON_CHOSEN, dir_A, A, community_pool, val_curr_Q, size_curr_community_pool,draw_seed):
-
-	if NO_DRAW==False:
-
-		print "Please wait for the graphs."
-
-		if JSON_CHOSEN==False:
-			draw_graph_adj(A,draw_seed)
-			draw_graph_comm(A,community_pool,draw_seed)
-			plot_Q(val_curr_Q,size_curr_community_pool)
-		elif JSON_CHOSEN==True:
-			draw_graph_dir_adj(dir_A,draw_seed)
-			draw_graph_dir_comm(dir_A,community_pool,draw_seed)
-			plot_Q(val_curr_Q,size_curr_community_pool)	
