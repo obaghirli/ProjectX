@@ -243,20 +243,12 @@ def intro(arg_list, GN_CHOSEN, JSON_CHOSEN, NO_DRAW, NO_PERF):
 	if "-NOPERF" in arg_list:
 		NO_PERF=True
 
-
-	if JSON_CHOSEN==False:
-		summary.data_characteristics(A)
-		print "\n"
-	elif JSON_CHOSEN==True:
-		summary.dir_data_characteristics(dir_A)
-		print "\n"
-
 	return (A, dir_A, GN_CHOSEN, JSON_CHOSEN, NO_DRAW, NO_PERF, MPROC,cpu)
 
 
 
 
-def run_community_detection(A,MPROC,cpu):
+def run_community_detection(A,MPROC,cpu, section_name):
 
 	total_edge=np.sum(A)/2
 	print "Initializing Communities... "
@@ -277,12 +269,12 @@ def run_community_detection(A,MPROC,cpu):
 	file_joins=open("joins.txt","w")
 
 	print "Entering Main Loop.\n"
-	t_start_algo=time.time()
 
 	while len(CA)>1:
 
 		t_start_loop=time.time()
 		print "--------------------"
+		print "Section:",section_name
 		print "Finding Best Pair..."
 		if MPROC==True:
 			candidate_pairs=find_candidate_pairs(CA)
@@ -322,13 +314,10 @@ def run_community_detection(A,MPROC,cpu):
 	print "---------------------"
 	print "Core Algorithm: Done"
 	print "---------------------\n"
-	t_end_algo=time.time()
 
-	print "Building Community pool from joins.txt..."
 	community_pool=build_community_pool_from_joins("joins.txt",Q)
-	print "OK"
 
-	return (community_pool, Q, val_curr_Q, size_curr_community_pool, t_start_algo, t_end_algo)
+	return (community_pool, Q, val_curr_Q, size_curr_community_pool)
 
 
 def handle_performance( GN_CHOSEN, JSON_CHOSEN, community_pool):
@@ -342,16 +331,19 @@ def handle_performance( GN_CHOSEN, JSON_CHOSEN, community_pool):
 			print "OK"
 	
 	elif NO_PERF==True:
-		performance_message="Performance Evaluation is disabled by -NOPERF argument either by the user or algorithm.\nNote: Performance Evaluation is only available for the first round."
+		performance_message="Performance Evaluation is disabled by -NOPERF argument either by the user or algorithm.\nNote: Performance Evaluation is only available for Sention: Initial."
 	
-	return performance_message
+	with open("performance.txt","w") as file:
+		file.write(performance_message)
+	
+	return None
 
-def handle_data_characteristics(dir_A,A,JSON_CHOSEN):
+def handle_data_characteristics(dir_A,A,JSON_CHOSEN, section_name):
 
 	if JSON_CHOSEN==False:
-		summary.data_characteristics(A)
+		summary.data_characteristics(A, section_name)
 	elif JSON_CHOSEN==True:
-		summary.dir_data_characteristics(dir_A)
+		summary.dir_data_characteristics(dir_A, section_name)
 
 	
 
@@ -362,13 +354,13 @@ def handle_draw(NO_DRAW, JSON_CHOSEN, dir_A, A, community_pool, val_curr_Q, size
 		print "Please wait for the graphs."
 
 		if JSON_CHOSEN==False:
-			draw.draw_graph_adj(A,draw_seed)
+			#draw.draw_graph_adj(A,draw_seed)
 			draw.draw_graph_comm(A,community_pool,draw_seed)
-			draw.plot_Q(val_curr_Q,size_curr_community_pool)
+			#draw.plot_Q(val_curr_Q,size_curr_community_pool)
 		elif JSON_CHOSEN==True:
-			draw.draw_graph_dir_adj(dir_A,draw_seed)
+			#draw.draw_graph_dir_adj(dir_A,draw_seed)
 			draw.draw_graph_dir_comm(dir_A,community_pool,draw_seed)
-			draw.plot_Q(val_curr_Q,size_curr_community_pool)	
+			#draw.plot_Q(val_curr_Q,size_curr_community_pool)	
 
 # calculates page ranks of vertices in the given graph: AdjMat, returns the list of pageranks.
 def calculate_pageranks(AdjMat):
@@ -416,7 +408,41 @@ def create_new_network_from_the_base(community_pool,AdjMat):
 
 
 
+def find_community_indices_to_further_divide(community_pool, MAX_COMMUNITY_SIZE):
 
+	community_indices_to_further_divide=[]
+	for position, community in enumerate(community_pool):
+		if len(community.members)>MAX_COMMUNITY_SIZE:
+			community_indices_to_further_divide.append(position)
+	return community_indices_to_further_divide
+
+def print_comm_size(community_pool):
+	print [ len(comm.members) for comm in community_pool ]
+
+def create_Adj_from_community(community, AdjMat):
+	B=AdjMat[ community.members,: ]
+	C=B[ :, community.members ]
+	return C
+
+
+def keep_track(community): #matching new indices to old indices
+	memlen=len(community.members)
+	tracker={}
+
+	for i in range(memlen):
+		tracker[i]=community.members[i]
+
+	return tracker
+
+def transform_community_members(community,tracker): # correcting the new indices to old indices[real paper indices] in the new community.
+	for i, member in enumerate(community.members):
+		community.members[i]=tracker[member]
+
+def print_levels(levels_init_down, levels_up):
+	content="\n---Levels Created---\n\n"+levels_init_down+levels_up+"root\n"
+	with open("levels.txt", 'w') as file:
+		file.write(content)
+	print content
 
 if __name__=="__main__":
 
@@ -426,55 +452,112 @@ if __name__=="__main__":
 	JSON_CHOSEN=False
 	NO_DRAW=False
 	NO_PERF=False
+	MAX_COMMUNITY_SIZE=50
+
+	stat_file=open("statistics.txt",'w')
+	stat_file.close()
+
+	levels_init_down=""
+
 
 
 	(A, dir_A, GN_CHOSEN, JSON_CHOSEN, NO_DRAW, NO_PERF, MPROC,cpu)=intro(arg_list, GN_CHOSEN, JSON_CHOSEN, NO_DRAW, NO_PERF)
+	handle_data_characteristics(dir_A,A,JSON_CHOSEN,"Original Data")
 
 
-	handle_data_characteristics(dir_A,A,JSON_CHOSEN)
-	print "\n"
+	print "################ Detecting INITIAL Communities ################"
+	(community_pool, Qmax,val_curr_Q,size_curr_community_pool)=run_community_detection(A,MPROC,cpu, "Initial")
+	handle_performance( GN_CHOSEN, JSON_CHOSEN, community_pool)
+	handle_data_characteristics(dir_A,A,False,"Detecting INITIAL Communities")
+	summary.print_community_statistics(Qmax,community_pool,"Detecting INITIAL Communities")
 
-	(community_pool, Q,val_curr_Q,size_curr_community_pool, t_start_algo, t_end_algo)=run_community_detection(A,MPROC,cpu)
+	print "########################### Done ###########################"
+	levels_init_down=levels_init_down+"Initial: Level_0\n"
 
-	t_start_perf=time.time()
-	performance_message=handle_performance( GN_CHOSEN, JSON_CHOSEN, community_pool)
-	t_end_perf=time.time()
-	handle_data_characteristics(dir_A,A,JSON_CHOSEN)
-	summary.print_statistics(t_start_algo,t_end_algo,t_start_perf,t_end_perf,Q,community_pool,performance_message)
-	handle_draw(NO_DRAW, JSON_CHOSEN, dir_A, A, community_pool, val_curr_Q, size_curr_community_pool,313)
+	
 
-	print "##################################################################################################"
+	community_indices_to_further_divide=find_community_indices_to_further_divide(community_pool, MAX_COMMUNITY_SIZE)
+	if len(community_indices_to_further_divide) >0:
+		print "######################## Going Downward ######################"
+		
+	level=0
+	while len(community_indices_to_further_divide)>0:
+		level=level+1
+		print "################ Detecting LEVEL: -%d ################" %level
+		check_list=[]
+		del_list=[]
+		counter=0
+		for index in community_indices_to_further_divide:
+			counter=counter+1
+			if JSON_CHOSEN==True:
+				dir_A_of_community=create_Adj_from_community(community_pool[index], dir_A)
+				A_of_community=dir_to_undir_A(dir_A_of_community)
+
+			else:
+				dir_A_of_community=None
+				A_of_community=create_Adj_from_community(community_pool[index], A)
+			
+			tracker=keep_track(community_pool[index])
+			text="Going Downward: LEVEL:-{} - JOB: {}/{} ".format(level, counter, len(community_indices_to_further_divide))
+			(new_community_pool, Qmax,val_curr_Q,size_curr_community_pool)=run_community_detection(A_of_community, MPROC,cpu, text)
+
+
+			check_list.append( len(new_community_pool) )
+			if len(new_community_pool)==1:
+				print "WARNING! No further division possible from LEVEL: -{} to LEVEL: -{} for THIS community. Ignore THIS and Continue".format(level-1,level)
+				continue
+
+			del_list.append(index)
+
+			for new_community in new_community_pool:
+				transform_community_members( new_community, tracker )
+				community_pool.append(new_community)
+
+		if sum(check_list)==len(community_indices_to_further_divide):
+			print "WARNING! No further division possible from LEVEL: -{} to LEVEL: -{} for ANY communities. Stopped GOING DOWNWARD beyond LEVEL: -{} and CONTINUE\n".format(level-1, level, level-1)
+			break
+
+		for index in sorted( del_list, reverse=True ):
+			del community_pool[index]
+
+		community_indices_to_further_divide=find_community_indices_to_further_divide(community_pool, MAX_COMMUNITY_SIZE)
+		print "################ Done with LEVEL: -%d ##################\n" %level
+		levels_init_down=levels_init_down+"Going Downward: Level_-{}\n".format(level)
+
+
+
+	summary.print_community_statistics("Not Available" ,community_pool,"Going Downwad")
+	handle_draw(NO_DRAW, False, dir_A, A, community_pool, val_curr_Q, size_curr_community_pool,313)
+
+	print "######################## Going Upward ######################"
 
 	if JSON_CHOSEN==True:
-		dir_A=create_new_network_from_the_base(community_pool,dir_A)
-		A=dir_to_undir_A(dir_A)
+		new_dir_A=create_new_network_from_the_base(community_pool,dir_A)
+		new_A=dir_to_undir_A(new_dir_A)
 	else:
-		A=create_new_network_from_the_base(community_pool,A)
+		new_dir_A=None
+		new_A=create_new_network_from_the_base(community_pool,A)
 
-
+	levels_up=""
+	level=0
 	while len(community_pool)>1:
+		level=level+1
 
-		handle_data_characteristics(dir_A,A,JSON_CHOSEN)
-		print "\n"
+		print "################ Detecting LEVEL: +%d ################" %level
+		text="Going Upward: LEVEL: +{}".format(level)
+		(community_pool, Qmax,val_curr_Q,size_curr_community_pool)=run_community_detection(new_A,MPROC,cpu, text)
 
-		(community_pool, Q,val_curr_Q,size_curr_community_pool, t_start_algo, t_end_algo)=run_community_detection(A,MPROC,cpu)
+		handle_draw(NO_DRAW, False, new_dir_A, new_A, community_pool, val_curr_Q, size_curr_community_pool,313)
 
-		t_start_perf=time.time()
-		performance_message=handle_performance( GN_CHOSEN, JSON_CHOSEN, community_pool)
-		t_end_perf=time.time()
-		handle_data_characteristics(dir_A,A,JSON_CHOSEN)
-		summary.print_statistics(t_start_algo,t_end_algo,t_start_perf,t_end_perf,Q,community_pool,performance_message)
-		handle_draw(NO_DRAW, JSON_CHOSEN, dir_A, A, community_pool, val_curr_Q, size_curr_community_pool,313)
-
-		print "##################################################################################################"
+		print "################ Done with LEVEL:+%d ##################\n" %level
+		levels_up=levels_up+"Going Upward: Level_+{}\n".format(level)
 
 		if JSON_CHOSEN==True:
-			dir_A=create_new_network_from_the_base(community_pool,dir_A)
-			A=dir_to_undir_A(dir_A)
+			new_dir_A=create_new_network_from_the_base(community_pool,new_dir_A)
+			new_A=dir_to_undir_A(new_dir_A)
 		else:
-			A=create_new_network_from_the_base(community_pool,A)
+			new_dir_A=None
+			new_A=create_new_network_from_the_base(community_pool,new_A)
 
-
-
-
-
+	print_levels(levels_init_down, levels_up)
+	print "DONE WITH EVERYTHING!"
