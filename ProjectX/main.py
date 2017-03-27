@@ -439,7 +439,7 @@ def transform_community_members(community,tracker): # correcting the new indices
 		community.members[i]=tracker[member]
 
 def print_levels(levels_init_down, levels_up):
-	content="\n---Levels Created---\n\n"+levels_init_down+levels_up+"root\n"
+	content="\n---Levels Created---\n\n"+levels_init_down+levels_up
 	with open("levels.txt", 'w') as file:
 		file.write(content)
 	print content
@@ -529,19 +529,27 @@ if __name__=="__main__":
 	summary.print_community_statistics("Not Available" ,community_pool,"Going Downwad")
 	handle_draw(NO_DRAW, False, dir_A, A, community_pool, val_curr_Q, size_curr_community_pool,313)
 
-	print "######################## Going Upward ######################"
 
-	if JSON_CHOSEN==True:
-		new_dir_A=create_new_network_from_the_base(community_pool,dir_A)
-		new_A=dir_to_undir_A(new_dir_A)
-	else:
-		new_dir_A=None
-		new_A=create_new_network_from_the_base(community_pool,A)
+	if len(community_pool) >1:
+		print "######################## Going Upward ######################"
 
 	levels_up=""
 	level=0
 	while len(community_pool)>1:
 		level=level+1
+
+		if JSON_CHOSEN==True:
+			new_dir_A=create_new_network_from_the_base(community_pool,dir_A)
+			new_A=dir_to_undir_A(new_dir_A)
+			benchmark.load_community_into_database(community_pool,level,new_dir_A)
+			dir_A=new_dir_A
+		else:
+			new_dir_A=None
+			new_A=create_new_network_from_the_base(community_pool,A)
+			benchmark.load_community_into_database(community_pool,level,new_A)
+			A=new_A
+
+		
 
 		print "################ Detecting LEVEL: +%d ################" %level
 		text="Going Upward: LEVEL: +{}".format(level)
@@ -552,12 +560,22 @@ if __name__=="__main__":
 		print "################ Done with LEVEL:+%d ##################\n" %level
 		levels_up=levels_up+"Going Upward: Level_+{}\n".format(level)
 
-		if JSON_CHOSEN==True:
-			new_dir_A=create_new_network_from_the_base(community_pool,new_dir_A)
-			new_A=dir_to_undir_A(new_dir_A)
-		else:
-			new_dir_A=None
-			new_A=create_new_network_from_the_base(community_pool,new_A)
+
+	#add root to database/ root needs to be added seperately, since "Going Upward cannot handle len(community_pool==1), which is the case for root "
+	#that means, last thing "Going Upward" does is merging 2X2 matrix and creating community_pool of 1 element, where run_community_detection must not be run on.
+	#therefore this case handled seperately
+
+	level=level+1 # level of root
+	levels_up=levels_up+"Going Upward: Level_+{}: root\n".format(level) # this creates the +levels content to save to levels.txt file
+
+	if JSON_CHOSEN==True:
+		new_dir_A=create_new_network_from_the_base(community_pool,dir_A)
+		benchmark.load_community_into_database(community_pool,level,new_dir_A)
+	else:
+		new_dir_A=None
+		new_A=create_new_network_from_the_base(community_pool,A)
+		benchmark.load_community_into_database(community_pool,level,new_A)
+
 
 	print_levels(levels_init_down, levels_up)
 	print "DONE WITH EVERYTHING!"
