@@ -267,7 +267,7 @@ def parse_json_create_dir_A(json_data_filename, total_entry_number):
 		records=json.load(json_data)
 
 	
-  	#load_base_network_into_database(records) # I commented it out because, I needed this once to load things into the database (for testing too).
+  	load_base_network_into_database(records) # I commented it out because, I needed this once to load things into the database (for testing too).
   	for record in records["Papers"]:
 
     		
