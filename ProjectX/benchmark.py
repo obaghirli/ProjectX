@@ -154,7 +154,7 @@ def load_base_network_into_database(records, paper_pageranks):
 
 	# url, usernama and password of the database will be configured later, currently default is used.
 	# we may consider creating driver object once and make it global.
-	driver = GraphDatabase.driver("bolt://localhost:7687", auth=basic_auth("neo4j", "235689Or@")) # connecting to Neo4j database, currently localhost
+	driver = GraphDatabase.driver("bolt://localhost:7687", auth=basic_auth("neo4j", "yourpassword")) # connecting to Neo4j database, currently localhost
   	
 	session=driver.session()
 	statement = "CREATE (:Paper {id:{id},title:{title}, pagerank:{pagerank}})" # this is the query template that will be used, fields can be changed later.
@@ -190,7 +190,7 @@ def load_community_into_database(community_pool,level,adj_mat, community_pageran
 	# url, usernama and password of the database will be configured later, currently default is used.
 	
 	# we may consider creating driver object once and make it global. 
-	driver = GraphDatabase.driver("bolt://localhost:7687", auth=basic_auth("neo4j", "235689Or@")) # connecting to Neo4j database, currently localhost
+	driver = GraphDatabase.driver("bolt://localhost:7687", auth=basic_auth("neo4j", "yourpassword")) # connecting to Neo4j database, currently localhost
   	
 	session=driver.session()
 
