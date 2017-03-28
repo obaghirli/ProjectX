@@ -10,6 +10,7 @@ import performance
 import summary
 import ETA
 import multiprocess
+import json
 
 seed=random.randint(1,2000)
 random.seed(seed)
@@ -179,7 +180,7 @@ def dir_to_undir_A(dir_A):
 	return A
 
 
-def intro(arg_list, GN_CHOSEN, JSON_CHOSEN, NO_DRAW, NO_PERF):
+def intro(arg_list, GN_CHOSEN, JSON_CHOSEN, NO_DRAW, NO_PERF, MAX_COMMUNITY_SIZE):
 
 	MPROC=False
 	cpu=1
@@ -223,7 +224,7 @@ def intro(arg_list, GN_CHOSEN, JSON_CHOSEN, NO_DRAW, NO_PERF):
 		dir_A=None
 		print "OK"
 	elif "-JSON" in arg_list:
-		print "Loading Paper Dataset [data.json <- created by dirnetgen.py]... "
+		print "Loading Directed Paper Dataset [data.json <- created by dirnetgen.py]... "
 
 		for position,arg in enumerate(arg_list):
 			if arg=="-JSON":
@@ -231,10 +232,15 @@ def intro(arg_list, GN_CHOSEN, JSON_CHOSEN, NO_DRAW, NO_PERF):
 
 		dir_A=benchmark.parse_json_create_dir_A("data.json", json_file_size) # 500 [0...499] is the total paper number in the data.json, you need to know it beforehand
 		print "OK"
-		print "Converting to undirected data... "
+		print "Creating Undirected duplicate from Directed JSON data... "
 		A=dir_to_undir_A(dir_A)
 		JSON_CHOSEN=True
 		print "OK"
+
+	if "-LIMIT" in arg_list:
+		for position, arg in enumerate(arg_list):
+			if arg=="-LIMIT":
+				MAX_COMMUNITY_SIZE=int(arg_list[position+1])
 
 
 	if "-NODRAW" in arg_list:
@@ -243,7 +249,7 @@ def intro(arg_list, GN_CHOSEN, JSON_CHOSEN, NO_DRAW, NO_PERF):
 	if "-NOPERF" in arg_list:
 		NO_PERF=True
 
-	return (A, dir_A, GN_CHOSEN, JSON_CHOSEN, NO_DRAW, NO_PERF, MPROC,cpu)
+	return (A, dir_A, GN_CHOSEN, JSON_CHOSEN, NO_DRAW, NO_PERF, MPROC, cpu, MAX_COMMUNITY_SIZE)
 
 
 
@@ -366,7 +372,7 @@ def handle_draw(NO_DRAW, JSON_CHOSEN, dir_A, A, community_pool, val_curr_Q, size
 def calculate_pageranks(AdjMat):
 
 	# convert AdjMat to igraph object, we should avoid such conversions, it is only for testing purposes. In future we consider implementing Igraph stuff ourselves
-	baseGraph=Graph()
+	baseGraph=igraph.Graph()
 	baseGraph.add_vertices(len(AdjMat))
 
 	for i in range(len(AdjMat)):
@@ -376,7 +382,7 @@ def calculate_pageranks(AdjMat):
 
 	
 	pageranks=baseGraph.pagerank(weights='weight')
-	pageranks = np.array(pageranks)
+	pageranks = np.array(pageranks)*len(pageranks) #normalize by node number
 	return pageranks
 
 
@@ -452,7 +458,7 @@ if __name__=="__main__":
 	JSON_CHOSEN=False
 	NO_DRAW=False
 	NO_PERF=False
-	MAX_COMMUNITY_SIZE=50
+	MAX_COMMUNITY_SIZE=1000000
 
 	stat_file=open("statistics.txt",'w')
 	stat_file.close()
@@ -461,8 +467,19 @@ if __name__=="__main__":
 
 
 
-	(A, dir_A, GN_CHOSEN, JSON_CHOSEN, NO_DRAW, NO_PERF, MPROC,cpu)=intro(arg_list, GN_CHOSEN, JSON_CHOSEN, NO_DRAW, NO_PERF)
+	(A, dir_A, GN_CHOSEN, JSON_CHOSEN, NO_DRAW, NO_PERF, MPROC,cpu, MAX_COMMUNITY_SIZE)=intro(arg_list, GN_CHOSEN, JSON_CHOSEN, NO_DRAW, NO_PERF, MAX_COMMUNITY_SIZE)
 	handle_data_characteristics(dir_A,A,JSON_CHOSEN,"Original Data")
+
+	#calculate papers` pageranks and adding paper objects into database
+	if JSON_CHOSEN==True:
+		print "Calculating Paper PageRanks..."
+		paper_pageranks=calculate_pageranks(dir_A)
+		print "OK"
+		print "Creating Paper Objects in NEO4J... "
+		with open("data.json",'r') as json_data:
+			records=json.load(json_data)
+	  	benchmark.load_base_network_into_database(records, paper_pageranks)
+	  	print "OK"
 
 
 	print "################ Detecting INITIAL Communities ################"
@@ -541,12 +558,28 @@ if __name__=="__main__":
 		if JSON_CHOSEN==True:
 			new_dir_A=create_new_network_from_the_base(community_pool,dir_A)
 			new_A=dir_to_undir_A(new_dir_A)
-			benchmark.load_community_into_database(community_pool,level,new_dir_A)
+
+			print "Calculating Level:+{} Community PageRanks...".format(level)
+			community_pageranks=calculate_pageranks(new_dir_A)
+			print "OK"
+
+			print "Creating LEVEL: +%d Community Objects in NEO4J..." %level
+			benchmark.load_community_into_database(community_pool,level,new_dir_A, community_pageranks)
+			print "OK"
+
 			dir_A=new_dir_A
+		
 		else:
 			new_dir_A=None
 			new_A=create_new_network_from_the_base(community_pool,A)
-			benchmark.load_community_into_database(community_pool,level,new_A)
+
+			print "Calculating Level:+{} Community PageRanks...".format(level)
+			community_pageranks=calculate_pageranks(new_A)
+			print "OK"
+
+			print "Creating LEVEL: +%d Community Objects in NEO4J..." %level
+			benchmark.load_community_into_database(community_pool,level,new_A, community_pageranks)
+			print "OK"
 			A=new_A
 
 		
@@ -570,12 +603,17 @@ if __name__=="__main__":
 
 	if JSON_CHOSEN==True:
 		new_dir_A=create_new_network_from_the_base(community_pool,dir_A)
-		benchmark.load_community_into_database(community_pool,level,new_dir_A)
+		dummy_root_pagerank=np.array([1.0])
+		print "Creating LEVEL: +%d: Root Community Object in NEO4J..." %level
+		benchmark.load_community_into_database(community_pool,level,new_dir_A, dummy_root_pagerank)
+		print "OK"
 	else:
 		new_dir_A=None
 		new_A=create_new_network_from_the_base(community_pool,A)
-		benchmark.load_community_into_database(community_pool,level,new_A)
-
+		dummy_root_pagerank=np.array([1.0])
+		print "Creating LEVEL: +%d: Root Community Object in NEO4J..." %level
+		benchmark.load_community_into_database(community_pool,level,new_A, dummy_root_pagerank)
+		print "OK"
 
 	print_levels(levels_init_down, levels_up)
 	print "DONE WITH EVERYTHING!"
