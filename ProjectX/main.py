@@ -11,6 +11,7 @@ import summary
 import ETA
 import multiprocess
 import json
+import database
 
 seed=random.randint(1,2000)
 random.seed(seed)
@@ -478,7 +479,7 @@ if __name__=="__main__":
 		print "Creating Paper Objects in NEO4J... "
 		with open("data.json",'r') as json_data:
 			records=json.load(json_data)
-	  	benchmark.load_base_network_into_database(records, paper_pageranks)
+	  	database.load_base_network_into_database(records, paper_pageranks)
 	  	print "OK"
 
 
@@ -564,7 +565,7 @@ if __name__=="__main__":
 			print "OK"
 
 			print "Creating LEVEL: +%d Community Objects in NEO4J..." %level
-			benchmark.load_community_into_database(community_pool,level,new_dir_A, community_pageranks)
+			database.load_community_into_database(community_pool,level,new_dir_A, community_pageranks)
 			print "OK"
 
 			dir_A=new_dir_A
@@ -578,7 +579,7 @@ if __name__=="__main__":
 			print "OK"
 
 			print "Creating LEVEL: +%d Community Objects in NEO4J..." %level
-			benchmark.load_community_into_database(community_pool,level,new_A, community_pageranks)
+			database.load_community_into_database(community_pool,level,new_A, community_pageranks)
 			print "OK"
 			A=new_A
 
@@ -605,14 +606,14 @@ if __name__=="__main__":
 		new_dir_A=create_new_network_from_the_base(community_pool,dir_A)
 		dummy_root_pagerank=np.array([1.0])
 		print "Creating LEVEL: +%d: Root Community Object in NEO4J..." %level
-		benchmark.load_community_into_database(community_pool,level,new_dir_A, dummy_root_pagerank)
+		database.load_community_into_database(community_pool,level,new_dir_A, dummy_root_pagerank)
 		print "OK"
 	else:
 		new_dir_A=None
 		new_A=create_new_network_from_the_base(community_pool,A)
 		dummy_root_pagerank=np.array([1.0])
 		print "Creating LEVEL: +%d: Root Community Object in NEO4J..." %level
-		benchmark.load_community_into_database(community_pool,level,new_A, dummy_root_pagerank)
+		database.load_community_into_database(community_pool,level,new_A, dummy_root_pagerank)
 		print "OK"
 
 	print_levels(levels_init_down, levels_up)

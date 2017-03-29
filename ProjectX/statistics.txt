@@ -33,9 +33,9 @@ Size of the Average Community: 45
 ---Going Downwad---
 --------------------------
 Quality Factor: Not Available
-Total Number of Communities: 14
-Size of the Smallest Community: 24
-Size of the Largest Community: 50
-Size of the Average Community: 35
+Total Number of Communities: 25
+Size of the Smallest Community: 3
+Size of the Largest Community: 26
+Size of the Average Community: 20
 ---------
 ---END---
