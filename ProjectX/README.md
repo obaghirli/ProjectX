@@ -1,139 +1,102 @@
-# ProjectX
-## Description 
-ProjectX is part of a larger project. ProjectX uses several real world and artificial network datasets, and execute community detection algorithm 
-[Fast algorithm for detecting community structure in networks by M.E.J Newman](https://arxiv.org/pdf/cond-mat/0309508.pdf) on them.
-Sample datasets are Karate club, Football club, GN benchmark datasets, Dolphin network, Arxiv.org High Energy Physics (untill 2003) datasets.
-The input of the program is one of these datasets passed as an argument to main.py function using the terminal. 
-The output of the program is the community pool, which holds community objects and each community object holds its members assigned to it.
-The program prints the original network and detected communities at the end by default. You can suppress graphs by passing -nodraw argument.
-You can also pass one of the datasets of particular interest the same way. e.g python main.py -dolphin -nodraw -mproc 2 .
-This command will choose Dolphin network dataset and suppress graphics at the end. If -mproc agrument with a corresponding value is passed, 
-then you get the advantage of Multiprocessing, value being the number of requested cpu. This is recommended for large datasets.  
-## Version
-**Version No: _03**   /  previous releases: _00, _01, _02
+# ProjectX: The C`ore
+![alt tag](cover.png)
 
-**Version_00: Original submission**
+## About
 
-**Version_01: Improvements**
-* deleting row/col from a matrix in update_CA() function is much more memory efficient
-* find_best_pair() function is much faster.
-* benchmark datasets, adjacency matrix is now int8 instead of int64 for less memory consumption.
-* deleting community_pool, right before its new assignment with np.deepcopy() in the main part of the main.py function 
-* arxivhepth dataset is added
+ProjectX is part of a larger project. This project aims at detecting clusters in a citation network, abstracting and visualizing them. Basic flow of the process is as follows:  
 
-**Version_02: Improvements**
-* multiprocessing is enabled for the find_best_pair() function which is the most computationally expensive part of the algorithm
+* Parsing and loading the citation network  
+* Detecting the initial communities in the citation network  
+* Further dividing initially detected communities until maximum desired community size for each community is reached  
+* Abstracting, i.e. collapsing communities into a single node while preserving the citation relationship against the other communities  
+* Detecting communities in the collapsed network and recursively continuing the abstraction process until a single community i.e. Root node is left  
+* Deploying the paper and community objects, parent/child relationships and interconnectedness related information to a database  
 
-**Version_03: Improvements**
-* update_CA() function uses logical masks for matrix/array operations, less looping, optimized for sparse matrices
-* find_candidate_pairs() functions is written to take load from find_best_pair() function, uses logical masking, and optimized for sparse matrices
-* find_best_pair() is now more multiprocessing friendly
-* community_pool is not stored im memory, rather joins.txt file is generated to dump best pairs and used to build community_pool at the end, after memory is relieved, decreases peak memory consumption, no need to duplicate large arrays. For large datasets, this improves the execution time of the core algorithm
-* ETA(Estimate Time) function was over estimating remaining time for large datasets, is now fixed, and works accurately
-* Information on data characteristics is now printed on screen, including: total node number, total edge number, average degree  
+Every paper and community object is assigned with a _pagerank_ value and links between communities on the same level have their _weight_ attribute.
 
-## Download and Directory Setup
-Download Projectx from [GitHub](https://github.com/orkhanbaghirli/ProjectX.git) and locate in your local machine with the exact same name [ProjectX].
-Edit "project.location" file in ProjectX directory and pass the location of ProjectX directory on your local machine. e.g.: 
-```
-/home/iorkhan/Desktop/Dropbox/    DO NOT FORGET "/" at the end if linux is your environment.
-```
-## Papers for the original implementation of the algorithm used in this project
-* Primary:::[Fast algorithm for detecting community structure in networks](https://arxiv.org/pdf/cond-mat/0309508.pdf)
-* Supporting:::[Finding community structure in very large networks](https://arxiv.org/pdf/cond-mat/0408187.pdf)
-* Benchmark Datasets:::[Benchmark graphs for testing community detection algorithms](https://arxiv.org/pdf/0805.4770.pdf)
+Programming language chosen: _Python 2.7.x_  
+Database chosen: _NEO4J_   
+Graph related operations via: _igraph-python_   
+Community detection algorithm used: _[Finding community structure in very large networks](https://arxiv.org/pdf/cond-mat/0408187.pdf)_  
+Code is proven to work on _Ubuntu Linux_ and _OSX_.  
 
+## Citation Data
 
-## Linux Commands
-```
-python main.py -GN   // this will use GN Benchmark datasets and will print the graphs at the end 
-python main.py -ARG  // e.g. ARG can be any of TEST or KARATE or DOLPHIN or FOOTBALL or ARXIVHEPTH datasets, do not forget the dash(-)
+So far, we are using the dirnetgen.py (directed network generator) script to generate our paper network. It creates the hierarchical network of  desired size and parameters. 
+These parameters can be modified through network.param file and a new data file with modified parameters can be generated by running the dirnetgen.py. The downloaded package 
+comes with a sample dataset of 500 entries. This script generates a network structure and stores results in a json file called data.json and adds paper id, title, keywords, 
+authors, metadata, date and reference related information accordingly. The generated network and the corresponding field data are designed to represent the reality as much 
+as possible. The Team is currently working on the acquiring real citation data.
 
-python main.py -GN -nodraw  //-nodraw exits silently without graphs, if used, you will NOT get any graphs
-python main.py -TEST -nodraw // this will use "TEST" dataset and will NOT print the graphs 
+## How to run?
+Before running any code, make sure that you have the followings installed:  
 
-python main.py // exactly same as the first command, this will use GN dataset [network.dat, community.dat] by default [at location: ~/ProjectX/benchmark] and will print the graphs
+* Python: [matplotlib, scipy, numpy, igraph]  
+* NEO4J: installed, configured [username=neo4j / password=test / ports=default values] and the status is active.  
+Now the code can be run.
 
-python main.py -GN -mproc 4 // enables multiprocessing with 4 cpu
+#### Options
 
-```
+* __python main.py -f data.json 500__  
+> `-f` argument takes the data file name i.e. data.json, which is the json file generated by dirnetgen.py. 
+500 is the number of entries in the json file.
 
-## Installation and System Requirements
-* Python 2.7.x //tested on version 2.7.12
-* pip
-* matplotlib library
-* numpy library
-* scipy library
-* igraph library
+* __python main.py -f data.json 500 -nodraw__  
+> `-nodraw` argument will suppress the igraph figures showing up on the screen, recommended if the data size is large. Otherwise, figures that pop-up give you the useful insights about the detected
+communities.
 
-How to install pip:
-```
-sudo apt-get update
-sudo apt-get install python-pip python-dev build-essential
-sudo pip install --upgrade pip
-```
-How to install matplotlib:
-```
-sudo apt-get update
-sudo python -m pip install matplotlib
-```
-How to install numpy:
-```
-sudo apt-get update
-sudo python -m pip install numpy
-```
-How to install scipy:
-```
-sudo apt-get update
-sudo python -m pip install scipy
-```
-How to install igraph:
-```
-sudo add-apt-repository ppa:igraph/ppa
-sudo apt-get update
-sudo apt-get install python-igraph
-```
+* __python main.py -f data.json -limit 30__  
+> `-limit` argument is the maximum desired community size per community. If the size of a community is bigger than this value after initial community detection, then the community will undergo another
+division process until its size falls below the desired size. Here, the size refers to the number of entities i.e. paper or community objects, a community holds inside.
 
-## Girvan Newman (GN) Benchmark Dataset Generation
-Note: The package comes with a sample GN dataset [network.dat, community.dat] at location: ~/ProjectX/benchmark.
-You do not need to generate a new dataset if you do not need a new dataset.
-Before you generate a new dataset, copy [network.dat, community.dat, statistics.dat] files at ~/ProjectX/benchmark to ~/ProjectX/benchmark/TEST_NETWORK/TEST directory for future references.
-main.py will only use datasets [network.dat, community.dat] at location: ~/ProjectX/benchmark.
-
-How to generate GN Benchmark Dataset:
-The following commands will use [parameters.dat,bech_seed.dat and others] and generate [network.dat,community.dat and statistics.dat].
-```
-cd ~/ProjectX/benchmark
-make
-./benchmark
-
-```
-Note: make sure that ./benchmark does not give you any WARNING. Typical warning includes "... took too long ..." if this happens, edit the parameters in parameters.dat file untill you recieve no WARNINGS.  
-Note: main.py uses only [network.dat] to build the graph and [community.dat] to do the performance evaluation as community.dat is the true community assignments of the benchmark dataset.
+* __python main.py -f data.json > logger.txt__  
+> `>logger.txt` argument will create the logger.txt file and transfer the screen printings into that file rather than showing them up on the terminal screen.  
 
 
-## Filesystem
+## Where are the Results?  
+* Results are stored into the database. Log in and explore your database.  
+* Structure of the paper object in the database: ``` fields: {id, title, keywords, authors, date, references, metadata, pagerank } ```  
+* Structure of the community object in the database: ``` fields: {id, level, pagerank } ```  
+* Communities are labeled with their level numbers. Highest level is the root level.  
+* Query for the root level and then explore its relationships with the children communities until the bottom level with the paper objects is reached.  
 
-* main.py  // core algorithm 
-* benchmark.py // functions to generate Adjacency Matrix from several .txt and .dat data files 
-* performance.py // functions to perform performance evaluation
-* ETA.py // functions estimating the remaining time
-* summary.py // functions handling most of the print statements including statistics 
-* draw.py // functions to plot Adjacency Matrix (scatter plot), build graph (before community detection and after community detection), plot evolution of Q factor
-* multiprocess.py // functions to check the availability of multiprocessing, enable multiprocessing and handle the values returned by the multiprocessed functions. 
+Besides the database, main.py also generates the levels.txt and statistics.txt files.  
 
-* karate.txt  //Karate Club dataset
-* dolphin.txt  //Dolphin Network dataset
-* football.txt //American Football Association dataset 
-* arxivhepth.txt //Arxiv dataset, High Energy Physics +27,000 nodes, +350,000 edges
-* project.location //this file stores the location of "ProjectX" on your local machine, YOU HAVE TO EDIT IT and do not forget "/" at the end (for Linux)
-* benchmark //This directory stores all required files for GN dataset generation and performance evaluation
-* joins.txt file is generated during community detection and is vital part of it. It stores best pairs, and is used to replay the joins, to build the communities at the end of the program flow. 
+* _levels.txt_:
+This file shows the leveling of the citation network in conjunction with its size i.e. number of communities it holds, as a result of the community detection and abstraction process. Negative levels show the further division of the initial level due to the -limit option. The most negative level is the base community level and the abstraction process starts from there up to the most positive level, which is the root level. The database holds only the initial level (if -limit option is omitted) or the base level (if -limit is provided) and all of the positive levels i.e. abstractions, which are of the interest to us.
 
-## Notes on ADJACENCY MATRIX
-ADJACENCY MATRIX matrix must be:
-* square 
-* symmetrical
-* zero diagonal | no self-reference
-* each node must have at least one connection | no isolated communities | this requirement exists for this version of the software. Can easily be modified to handle isolated communities as well  
+* _statistics.txt_: 
+This file shows the original dataset/graph properties e.g. total node number, edge number, min/max in and out degrees, average degrees for both directed and undirected graphs. Furthermore, it also tells you about  the properties of the detected initial communities, and the base communities if different. The statistical measures also include: Modularity factor, detected community number, and min/max/average community size.
+
+## File System
+__Python files__: 
+
+* main.py  
+* parser.py  
+* database.py  
+* summary.py  
+* dirnetgen.py  
+
+__Input files__:  
+
+* data.json -> main.py   
+* network.param -> dirnetgen.py    
+
+__Output files__:  
+
+* levels.txt <- main.py  
+* statistics.txt <- main.py  
+* logger.txt <- main.py  
+* data.json <- dirnetgen.py  
+* network.stat <- dirnetgen.py  
+* community_assignment.dat <- dirnetgen.py  
+* links.dat <- dirnetgen.py  
+
+
+## Notes on the Citation dataset
+The graph representing the citation network must have the following properties:
+
+* no self-loops  
+* no multi-edges  
+* no isolated nodes  
 

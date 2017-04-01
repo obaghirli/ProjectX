@@ -1,6 +1,9 @@
 from neo4j.v1 import GraphDatabase, basic_auth
+import igraph
+import numpy as np
 
-driver = GraphDatabase.driver("bolt://localhost:7687", auth=basic_auth("neo4j", "yourpassword")) # connecting to Neo4j database, currently localhost
+
+driver = GraphDatabase.driver("bolt://localhost:7687", auth=basic_auth("neo4j", "235689Or@")) # connecting to Neo4j database, currently localhost
 
 # This function loads the citation network of papers into the neo4j database. Each record in records is the information about a paper.
 # This function needs to be called once. And periodically later in case new paper/papers is added to the system.
@@ -45,7 +48,7 @@ def load_base_network_into_database(records, paper_pageranks):
 # community_pool : list of list showing what members from the one level below the community contains. Members are shown as the ids of the members. Index in the pool is the global id of the community.
 # adj_mat: adj matrix showing the inter-community connections, indices denoting the ids of the communities present in community pool
 # level : it is the level at which these community pool resides
-def load_community_into_database(community_pool,level,adj_mat, community_pageranks):
+def load_community_into_database(community_pool,level,new_G, community_pageranks):
 	# url, usernama and password of the database will be configured later, currently default is used.
 	
 	# we may consider creating driver object once and make it global. 
@@ -69,13 +72,20 @@ def load_community_into_database(community_pool,level,adj_mat, community_pageran
 
 	
 	# this iteration loads inter-community relationships/citations
+
+	list_of_list_of_connected_nodes=new_G.get_adjlist(mode=igraph.OUT)
+
 	for i in range(0,len(community_pool)):
-		list_of_connected_nodes=[j for j,e in enumerate(adj_mat[i]) if e!=0]
+		list_of_connected_nodes=list_of_list_of_connected_nodes[i]
 		
 		for ind in list_of_connected_nodes:
 
+			new_es= new_G.es.select( _source_in=[i] )
+			new_es= new_es.select( _target_in=[ind] )
+			WEIGHT= new_es['weight']
+
 			with session.begin_transaction() as tx:
-				res=tx.run(template2,id1=i,_level=level,id2=ind,weight=adj_mat[i][ind])
+				res=tx.run(template2,id1=i,_level=level,id2=ind,weight=WEIGHT)
 				res.consume()
 				tx.success=True
 
@@ -86,9 +96,9 @@ def load_community_into_database(community_pool,level,adj_mat, community_pageran
 		with session.begin_transaction() as tx:
 			
 			if level>1:
-				res=tx.run(template4,parent_id=index,parent_level=level,child_level=level-1,parent_children=community.members)
+				res=tx.run(template4,parent_id=index,parent_level=level,child_level=level-1,parent_children=community.vs['label'])
 			else:
-				res=tx.run(template3,parent_id=index,parent_level=level,parent_children=community.members)
+				res=tx.run(template3,parent_id=index,parent_level=level,parent_children=community.vs['label'])
 			
 			res.consume()
 			tx.success=True
