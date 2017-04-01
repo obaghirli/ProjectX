@@ -3,7 +3,7 @@ import igraph
 import numpy as np
 
 
-driver = GraphDatabase.driver("bolt://localhost:7687", auth=basic_auth("neo4j", "235689Or@")) # connecting to Neo4j database, currently localhost
+driver = GraphDatabase.driver("bolt://localhost:7687", auth=basic_auth("neo4j", "test")) # connecting to Neo4j database, currently localhost
 
 # This function loads the citation network of papers into the neo4j database. Each record in records is the information about a paper.
 # This function needs to be called once. And periodically later in case new paper/papers is added to the system.
