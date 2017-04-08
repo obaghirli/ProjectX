@@ -14,10 +14,10 @@ ProjectX is part of a larger project. This project aims at detecting clusters in
 
 Every paper and community object is assigned with a _pagerank_ value and links between communities on the same level have their _weight_ attribute.
 
-First level communities have their titles and keywords chosen to be the title and keywprds of the best paper, with regard to its pagerank index, they hold inside. Likewise, 
+First level communities have their titles and keywords chosen to be the title and keywords of the best paper, with regard to its pagerank index, they hold inside. Likewise, 
 the higher level communities have their titles and keywords chosen to be the title and keywords of the best sub-community, with regard to its pagerank index, they hold inside.  
 The title and keywords assigned to a communitity are to describe the community as they show the most influential subject area amongst the many others, that community hosts. 
-This helps to easily pin down your area of interest without any over-complication and navigate in and out throught the hierarchical network of communities. 
+This helps to easily pin down your area of interest without any over-complication and navigate horizontally and vertically throught the hierarchical network of communities. 
 
 Programming language chosen: _Python 2.7.x_  
 Database chosen: _NEO4J_   
