@@ -78,5 +78,6 @@ def print_files_generated():
 	print   "-----------------------"
 	print   "levels.txt"
 	print 	"statistics.txt"
+	print 	"Neo4j database at localhost:7474/browser/"
 	print 	"\n"
 

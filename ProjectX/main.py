@@ -252,7 +252,7 @@ if __name__=="__main__":
 	print "Database: ROOT: LEVEL: +{} Objects ---> NEO4J... ".format(level),
 	stdout.flush()
 	database.load_community_into_database(community_pool,level,new_G, dummy_root_pagerank)
-	print "OK"
+	print "Done"
 
 	levels_up=levels_up+"Size: {}: Going Upward: Level: +{}: ROOT\n".format( len(community_pool), level ) # this creates the +levels content to save to levels.txt file
 	print "\n"
@@ -260,5 +260,15 @@ if __name__=="__main__":
 
 	summary.print_levels(levels_init_down, levels_up)
 	
-	print "Finished!"
+	print "Almost Finished! A few more steps to go ...\n"
+
+
+	# adding community titles and keywords to the database
+	ROOT_LEVEL=level
+	print "Starting to add: community.title and community.keywords to the database... \n"
+	database.add_title_keywords_to_communities(ROOT_LEVEL)
+	
+	print "\nFinished!"
 	summary.print_files_generated()
+
+

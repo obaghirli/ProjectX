@@ -1,9 +1,10 @@
 from neo4j.v1 import GraphDatabase, basic_auth
 import igraph
 import numpy as np
+from   sys import stdout
 
 
-driver = GraphDatabase.driver("bolt://localhost:7687", auth=basic_auth("neo4j", "test")) # connecting to Neo4j database, currently localhost
+driver = GraphDatabase.driver("bolt://localhost:7687", auth=basic_auth("neo4j", "235689Or@")) # connecting to Neo4j database, currently localhost
 
 # This function loads the citation network of papers into the neo4j database. Each record in records is the information about a paper.
 # This function needs to be called once. And periodically later in case new paper/papers is added to the system.
@@ -104,3 +105,62 @@ def load_community_into_database(community_pool,level,new_G, community_pageranks
 			tx.success=True
 		
 		index=index+1
+
+
+
+def add_title_keywords_to_communities(ROOT_LEVEL):
+
+	DESCRIPTOR_LIMIT=1 # number of entities (papers/sub-communities) to describe the parent community. If changed, the program will crash. Decision is to have 1 title and keywords list to describe a community.
+					   # So, title of the parent community = title of the best(in terms of pagerank) entity (paper or sub-community) it holds inside,
+					   #     keywords of the parent community = best entity`s keywords 
+
+	# returns the number of communities on a level, e.g if 10, then the community ids on that level are [0,1,....9]
+	template_0="MATCH (communities:Community) WHERE communities.level={level} RETURN count(communities) AS community_number"
+	# returns the parent community`s children entities` titles and keywords as it is ordered by the pagerank value from best to worst and picks the best one
+	template_1="MATCH (parent:Community)-[:child]->(children) WHERE parent.level={level} AND parent.id={parent_id} RETURN children.title, children.keywords, children.pagerank as pagerank ORDER BY pagerank DESC LIMIT {limit}"
+	# adds the parent community`s found best entity`s title and keywords to the parent community
+	template_2="MATCH (parent:Community) WHERE parent.level={level} AND parent.id={parent_id} SET parent.keywords={keywords}, parent.title={title}"
+
+	session=driver.session()
+
+	for level in range(1,ROOT_LEVEL+1): # from level 1 up to and including the root level
+		
+		print "Database: LEVEL: {}/{} community.title and community.keywords ---> NEO4J... ".format(level, ROOT_LEVEL),
+		stdout.flush()
+
+		# in this part, we get the community number on any level
+		with session.begin_transaction() as tx:
+			
+			info=tx.run(template_0, level=level)
+			records=list(info) # as far as i understood, we always need to convert the info to a python list to process the info
+			community_number=records[0]["community_number"] # records[0] is the only object in the list( and it is a dict )
+			info.consume()
+			tx.success=True
+
+
+		for parent_id in range(community_number): # iterating over the community ids
+
+			keywords=[]
+			title=""
+
+			# in this part, we find the best entity and store its title and keywords values
+			with session.begin_transaction() as tx:
+
+				info=tx.run(template_1, level=level, parent_id=parent_id, limit=DESCRIPTOR_LIMIT)
+				records=list(info)
+				
+				for record in records:
+					keywords=[ str(keyword) for keyword in record["children.keywords"] ] # if I did not do this, list returned from record["children.keywords"] has elements with uncommon python string type 
+					title=str(record["children.title"])
+
+				info.consume()
+				tx.success=True
+
+			# in this part, we add the stored title and keywords values to a parent community 
+			with session.begin_transaction() as tx:
+				
+				info=tx.run(template_2, level=level, parent_id=parent_id, keywords=keywords, title=title)
+				info.consume()
+				tx.success=True
+
+		print "Done"
