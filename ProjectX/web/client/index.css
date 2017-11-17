@@ -1,0 +1,282 @@
+body {
+	background-color: #d2d5da;
+}
+
+.search-box{
+	position: relative;
+ 	margin-top: 0px;
+ 	margin-left: 100px;
+ 	width: 93%;
+ 	height: 72px;
+ 	background-color: #efeff4;
+
+ 	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+}
+
+.container-search{
+	position: absolute;
+	top: 10px;
+	left: 15px;
+ 	width: 92%;
+ 	vertical-align: middle;
+ 	white-space: nowrap;
+}
+
+
+.container-search .icon-search{
+ 	position: absolute;
+	top: 50%;
+	margin-left: 17px;
+	margin-top: 13px;
+	z-index: 1;
+	color: #4f5b66;
+}
+
+.container-search input#search-query{
+	position: absolute;
+	width: 92%;
+	height: 50px;
+	background: #f9fbfd;
+	border: none;
+	font-size: 14pt;
+	float: left;
+	color: #63717f;
+	padding-left: 45px;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+
+	-webkit-transition: background .60s ease;
+	-moz-transition: background .60s ease;
+	-ms-transition: background .60s ease;
+	-o-transition: background .60s ease;
+	transition: background .60s ease;
+
+}
+
+.container-search input#search-query::-webkit-input-placeholder {
+   color: #65737e;
+}
+
+
+
+
+.container-search input#search-query:hover, .container-search input#search-query:focus, .container-search input#search-query:active{
+    outline:none;
+    background: #ffffff;
+  }
+
+
+
+.frame {
+	position: relative;
+	width: 75%;
+	height: 800px;
+	margin-top: 25px;
+	margin-left: 100px;
+
+}
+/*
+.frame {
+	display: none;
+}
+*/
+.top-bar {
+	position: absolute;
+	width: 100%;
+	height: 40px;
+	margin-left: 0px;
+	margin-top: 0px;
+	background-color: #ffffff;
+
+
+}
+
+.left-bar {
+	position: absolute;
+	width: 40px;
+	height: 760px;
+	margin-left: 0px;
+	margin-top: 40px;
+	background-color: #efeff4;
+
+}
+
+.bottom-bar {
+	position: absolute;
+	width: 100%;
+	height: 40px;
+	margin-left: 0px;
+	margin-top: 760px;
+	background-color: #ffffff;
+
+}
+
+.svg-local-container {
+	position: absolute;
+	top: 40px;
+	left: 40px;
+	height: 720px;
+	width: 97.1%;
+	background-color: #f9fbfd;
+
+}
+
+
+.nav-container {
+	position: fixed;
+	left:0;
+	top: 0;
+	bottom: 0;
+	width: 80px;
+
+	background-color: #4c4957;
+
+}
+
+.top-menu {
+	position: absolute;
+	width: 250px;
+	height: 40px;
+	top: 0;
+	right: 0;
+	background-color: #ffffff;
+}
+
+.frame-close {
+	position: absolute;
+	width: 60px;
+	height: 40px;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	background-color: #ffffff;
+	text-align: center;
+	padding-top: 7px;
+
+}
+
+.top-left-menu {
+	position: absolute;
+	width: 40%;
+	height: 40px;
+	background-color: #ffffff;
+	top: 0;
+	left: 0;
+
+}
+
+.top-left-display {
+	position: absolute;
+	float: left;
+	padding-left: 10px;
+	vertical-align: middle;
+	height: 40px;
+	width:160px;
+	background-color: #f9fbfd;
+	border-right: 2px solid #ccccd6;
+	opacity: 0.4;
+
+}
+
+#top-left-display-parag {
+	position: absolute;
+	width: 100%
+	vertical-align: middle;
+	text-align: center;
+	color: #000;
+	line-height: 40px;
+	font-size: 15px;
+	font-family: arial, sans-serif;
+	float: left;
+}
+
+.top-left-display-query {
+	position: absolute;
+	float: left;
+	top: 0;
+	left: 160px;
+	padding-left: 10px;
+	vertical-align: middle;
+	line-height: 40px;
+	height: 40px;
+	width: 700px;
+	background-color: #f9fbfd;
+	border-right: : 2px solid #ccccd6;
+	opacity: 0.4;
+
+	display:inline-block;
+	overflow: hidden;
+	white-space: nowrap;
+  	text-overflow: ellipsis;
+
+}
+
+.display-query-content {
+	position: absolute;
+	vertical-align: middle;
+	text-align: left;
+	color: #000;
+	line-height: 40px;
+	font-size: 15px;
+	font-family: arial, sans-serif;
+	float: left;
+}
+
+
+.frame-close:hover {
+	background-color: #9b9da2;
+
+	-webkit-transition: background .2s ease;
+	-moz-transition: background .2s ease;
+	-ms-transition: background .2s ease;
+	-o-transition: background .2s ease;
+	transition: background .2s ease;
+
+}
+
+.frame-close:active {
+	background-color: #a08f8f;
+
+	-webkit-transition: background .10s ease;
+	-moz-transition: background .10s ease;
+	-ms-transition: background .10s ease;
+	-o-transition: background .10s ease;
+	transition: background .10s ease;
+
+}
+
+.glyphicon.glyphicon-off {
+	font-size: 25px;
+}
+
+
+.panel-not-found {
+
+	position: relative;
+	width: 93%;
+	height: 40px;
+	margin-top: 25px;
+	margin-left: 100px;
+
+	background-color: #f9fbfd;
+
+ 	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+
+
+}
+
+#parag-not-found {
+	position: absolute;
+	text-align: center;
+	float: left;
+	padding-left: 10px;
+	vertical-align: middle;
+	line-height: 40px;
+	font-family: arial, sans-serif;
+	opacity: 0.7;
+}

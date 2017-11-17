@@ -1,0 +1,80 @@
+.right-panel-container {
+	position: relative;
+	width: 15%;
+	height: 800px;
+	margin-top: -800px;
+	margin-left: 83.4%;
+	overflow: auto;
+
+	background-color: #efeff4;
+
+}
+
+
+.note-container {
+	position: relative;
+	margin-top: 7px;
+	margin-left: 6px;
+
+	width: 96%;
+	height: 182px;
+	background-color: #f9fbfd;
+
+	border: 3px solid #fff;
+
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+}
+
+.note-container p {
+	white-space: normal;
+}
+
+.note-header {
+	position: absolute;
+	top: 0;
+	width: 100%;
+	height: 35px;
+	background-color: rgb(204, 204, 204);
+	padding-left: 2px;
+	padding-top: 1px;
+	opacity: 0.8;
+
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+}
+
+.note-header p {
+	line-height: 35px;
+	text-align: center;
+	vertical-align: middle;
+	font-size: 12px;
+	font-family: Helvetica, arial, sans-serif;
+	color:rgb(59, 59, 59);
+	opacity: 1;
+
+	
+}
+
+.note-body {
+	position: absolute;
+	top:36px;
+	width: 100%;
+	height: 144px;
+	background-color: #f9fbfd;
+	overflow: auto;
+	padding-left: 2px;
+	padding-top: 5px;
+	opacity: 0.8;
+}
+
+.note-body p {
+	font-size: 12px;
+	font-family: Helvetica, arial, sans-serif;
+	color:rgb(59, 59, 59);
+	opacity: 1;
+
+
+}

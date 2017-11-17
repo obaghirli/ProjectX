@@ -1,0 +1,89 @@
+.dropdown-container {
+
+	position: absolute;
+	top: 10px;
+	right: 130px;
+
+	width:115px;
+	height: 49px;
+	background-color: #efeff4;
+	opacity: 0.7;
+	vertical-align: middle;
+	margin-left: 5px;
+
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+
+	z-index: 1;
+
+
+}
+
+.on-show {
+	font-size: 16px;
+	font-family: Helvetica ,arial,sans-serif;
+	line-height: 49px;
+	vertical-align: middle;
+	text-align: left;
+	padding-left: 5px;
+	background-color: #efeff4;
+
+	width: 100%;
+	height: 49px;
+	padding-right: 15px;
+	border:1px solid #fff;
+
+
+
+
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+}
+
+
+
+.list-container {
+	position: absolute;
+	height: 95px;
+	min-width: 115px;
+	background-color: #efeff4;
+	overflow: auto;
+	text-align: left;
+
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+}
+
+.litem  {
+	display: block;
+	padding-left: 5px;
+	line-height: 30px;
+	text-align: left;
+	vertical-align: middle;
+	font-family: Helvetica ,arial,sans-serif;
+	font-size: 15px;
+	border-top: 1px solid #fff;
+
+
+}
+
+.litem#Title:hover{
+	background-color: #ccc;
+}
+
+.litem#ProjectX-ID:hover{
+	background-color: #ccc;
+}
+
+.litem#Keyword:hover{
+	background-color: #ccc;
+}
+
+.fa-caret-down {
+	position: absolute;
+	top: 34%;
+	right: 9px;
+}

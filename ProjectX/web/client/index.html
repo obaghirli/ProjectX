@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+
+	
+<head>
+
+<title>ProjectX | Results</title>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<link rel="stylesheet" href="d3.css">
+<link rel="stylesheet" href="index.css">
+<link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+<link rel="stylesheet" href="dropdown.css">
+<link rel="stylesheet" href="right_panel.css">
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+<script src="//d3js.org/d3.v4.min.js"></script>
+
+<input type="text" id="res" value="0" style="display:none">
+<input type="text" id="error" value="0" style="display:none">
+
+</head>
+
+
+<body>
+
+
+<header class="header">
+	<div class="search-box">
+
+		<div class='dropdown-container'>
+			<div class='on-show' id='on-show-id'>Keyword<i class="fa fa-caret-down fa-lg" aria-hidden="true"></i></div>
+			<div class='list-container' style='display:none;'>
+					<div class='litem' id='ProjectX-ID' >ProjectX ID</div>
+					<div class='litem' id='Title'>Title</div>
+					<div class='litem' id='Keyword'>Keyword</div>
+			</div>
+		</div>
+
+		<div class="container-search">
+		    <span class="icon-search"><i class="fa fa-search"></i></span>
+		    <input type="text" id="search-query" placeholder="Search..." />
+		</div>
+	</div>
+</header>
+
+<section class="main-window"></section>
+
+<nav>
+	<div class=nav-container></div>
+</nav>
+
+
+
+<script>
+
+
+	$(document).ready(function(){
+
+			var search_field_val=0;
+
+			$(".on-show").hover( function(){
+				$(this).css("background","#ccc");
+				$(this).css("opacity","1")
+			}, function(){
+				var list= $(".list-container");
+				if ( list.css('display')=='none' ){
+					$(this).css("background","#efeff4");
+					$(this).css("opacity","1")
+				}
+			});
+
+
+			var toggle=0;
+
+			$(document).on("click",".on-show", function(){
+
+				if (toggle==0) {
+					$(".on-show").css("background", "#ccc");
+					toggle=1;
+				} else {
+					$(".on-show").css("background", "#efeff4");
+					toggle=0;
+				}
+				var list= $(".list-container");
+
+				if ( list.css('display')=='none' ){
+					$(".list-container").show();
+
+				} else {
+					$(".list-container").hide();
+				}
+
+			});
+
+
+
+			$(document).on("click",".litem", function(){
+
+				var litem=$("#"+this.id.toString())[0].innerHTML;
+				
+				if (litem=="Keyword"){  search_field_val=0;}
+				else if (litem=="ProjectX ID"){search_field_val=1;}
+				else if (litem=="Title"){search_field_val=2;}
+
+				var element = document.getElementById('on-show-id');
+				for (var i=0; i<element.childNodes.length; ++i) {
+				    if (element.childNodes[i].nodeType === 3) {
+				        element.childNodes[i].textContent=litem;
+				    }
+				}
+
+				$(".list-container").hide();
+				$(".on-show").css("background", "#efeff4");
+				toggle=0;
+
+
+			});
+
+
+
+			$(document).mouseup(function (e){
+
+			    var dropdown = $(".dropdown-container");
+			    var list= $(".list-container");
+
+			    if (!dropdown.is(e.target) && dropdown.has(e.target).length == 0) {
+			        list.hide();
+			        $(".on-show").css("background", "#efeff4");
+					toggle=0;
+			    }
+			});
+
+
+
+			$(".frame-close").click( function(){
+				if (simulation!=null){ simulation.stop(); }
+				$(".main-window").find("#"+this.id.toString().slice(1)).fadeOut(300);
+				$(".main-window").find("#p"+this.id.toString().slice(2)).fadeOut(300);
+			});
+
+			$(document).on("click",".display-query-content", function(){
+
+				var display_query_content=$("#"+this.id.toString())[0].innerHTML;
+				document.getElementById("search-query").value=display_query_content.split(":")[1];
+
+			});
+
+
+			$("#search-query").keydown( function(event){
+				if (event.which==13){
+					event.preventDefault();
+					var term=$(this).val();
+
+					var frame_id=parseInt(document.getElementById("res").value);
+					var error_id=parseInt(document.getElementById("error").value) ;
+
+					if (term==""){
+						$(".main-window").prepend("<div class='panel-not-found' id="+ "e"+ error_id.toString()+ " style='display:none'><p id='parag-not-found'>Empty. Please try another search query.</p><div class='frame-close' id="+ "ne"+ error_id.toString()+ "><span class='glyphicon glyphicon-off'></span></div>");
+						$("#e"+error_id.toString()).fadeIn(200);
+						error_id=error_id+1;
+						document.getElementById("error").value=error_id;	
+
+
+						$(".frame-close").click( function(){
+							if (simulation!=null){ simulation.stop(); }
+							$(".main-window").find("#"+this.id.toString().slice(1)).fadeOut(300);
+							$(".main-window").find("#p"+this.id.toString().slice(2)).fadeOut(300);
+						});
+
+						return;				
+					};	
+
+
+
+					var url='/process_search_query';
+					var posting= $.post( url, {search_query:term, search_field:search_field_val}, "json" );
+
+					var simulation=null;
+					var node_clicked=false;
+					var current_node_str="";
+
+					$(".frame-close").click( function(){
+						if (simulation!=null){ simulation.stop(); }
+						$(".main-window").find("#"+this.id.toString().slice(1)).fadeOut(300);
+						$(".main-window").find("#p"+this.id.toString().slice(2)).fadeOut(300);
+					});
+
+
+
+					posting.done( function(graph){
+
+
+
+						if (graph=="NOT-FOUND"){ // NOT-FOUNT
+							$(".main-window").prepend("<div class='panel-not-found' id="+ "e"+ error_id.toString()+ " style='display:none;'><p id='parag-not-found'>Not Found. Please try another search query.</p><div class='frame-close' id="+ "ne"+ error_id.toString()+ "><span class='glyphicon glyphicon-off'></span></div>");
+							$("#e"+error_id.toString()).fadeIn(200);
+							error_id=error_id+1;
+							document.getElementById("error").value=error_id;
+
+
+							$(".frame-close").click( function(){
+								if (simulation!=null){ simulation.stop(); }
+								$(".main-window").find("#"+this.id.toString().slice(1)).fadeOut(300);
+								$(".main-window").find("#p"+this.id.toString().slice(2)).fadeOut(300);
+							});
+
+							return;				
+						};
+
+
+						$(".main-window").prepend("<div class='frame' id="+ "f"+ frame_id.toString()+ " style='display:none'><div class='svg-local-container'></div><div class='top-bar'><div class='top-left-menu'> <div class='top-left-display'> <p id='top-left-display-parag'>Display Number: " +frame_id.toString()+" </p></div><div class='top-left-display-query'><span class='display-query-content' id="+ "q"+ frame_id.toString()+ ">Query:" +term+ "</span></div> </div><div class='top-menu'><div class='frame-close' id="+ "cf"+ frame_id.toString()+ "><span class='glyphicon glyphicon-off'></span></div></div></div><div class='bottom-bar'></div><div class='left-bar'></div></div><div class='right-panel-container' id="+ "p"+ frame_id.toString()+ "  style='display:none'></div>");
+
+						$("#f"+frame_id.toString()).fadeIn(200);
+						$("#p"+frame_id.toString()).fadeIn(200);
+
+
+
+						for (var i =0; i<graph.nodes.length; i++) {
+
+							$("#p"+frame_id.toString()).prepend("<div class='note-container' id="+ "nc"+ i.toString()+ " style='display:none' ><div class='note-header'><p >"+graph.nodes[i].id.toString()+"</p></div><div class='note-body'><p class='note-id' >Title: "+graph.nodes[i].title+"</p><p class='keywords' >Keywords: "+graph.nodes[i].keywords.join(", ")+"</p><p class='pagerank' >Pagerank: "+graph.nodes[i].pagerank+"</p><p class='authors' >Authors: "+graph.nodes[i].authors.join(", ")+"</p><p class='date'>Date: "+graph.nodes[i].date+"</p><p class='metadata' >Metadata: "+graph.nodes[i].metadata.join(", ")+"</p></div></div>")
+
+							$("#p"+frame_id.toString()).find("#nc"+i.toString()).fadeIn(100);
+						}
+
+
+
+						frame_id=frame_id+1;
+						document.getElementById("res").value=frame_id;
+
+
+						// dimensions
+						var width = $(".svg-local-container").width();
+						var height = $(".svg-local-container").height();
+
+
+						var margin = {
+						    top: 50,
+						    bottom: 50,
+						    left: 50,
+						    right: 50,
+						};
+
+
+					// create an svg to draw in
+						var svg = d3.select(".svg-local-container")
+							.append("svg")
+						    .attr("width", width)
+						    .attr("height", height)
+						    .attr("preserveAspectRatio", "xMidYMid slice")
+						    .attr("viewBox", "0 "+ "0 "+ width.toString()+" " +height.toString() )
+						    .append('g')
+
+						width = width - margin.left - margin.right;
+						height = height - margin.top - margin.bottom;
+
+
+						var color = d3.scaleOrdinal(d3.schemeCategory20);
+
+						simulation = d3.forceSimulation()
+						    .force("link", d3.forceLink().distance(50).id(function(d) { return d.id; }).strength(0.85))
+						    .force("charge", d3.forceManyBody()  )
+						    .force("center", d3.forceCenter(width / 2, height / 2));
+
+
+						  var nodes = graph.nodes,
+						      nodeById = d3.map(nodes, function(d) { return d.id; }),
+						      links = graph.links,
+						      bilinks = [];
+
+						  links.forEach(function(link) {
+						    var s = link.source = nodeById.get(link.source),
+						        t = link.target = nodeById.get(link.target),
+						        i = {}; // intermediate node
+						    nodes.push(i);
+						    links.push({source: s, target: i}, {source: i, target: t});
+						    bilinks.push([s, i, t]);
+						  });
+
+						  var link = svg.selectAll(".link")
+						    .data(bilinks)
+						    .enter().append("path")
+						      .attr("class", "link")
+						      .attr("stroke", function(d){return "#ddd"});
+
+						  var def_opacity=0.7;
+						  var node = svg.selectAll(".node")
+						    .data(nodes)
+						    .enter().append("circle")
+						      .attr("class", "node")
+						      .attr("r", function(d){if (d.hasOwnProperty('pagerank')){return d.pagerank*10;}})
+						      .attr("fill", function(d) { return color(d.group); })
+						      .attr("fill-opacity", def_opacity)
+						      .call(d3.drag()
+						          .on("start", dragstarted)
+						          .on("drag", dragged)
+						          .on("end", dragended))
+						     .on("mouseover", mouseOver(0.1))
+					         .on("mouseout", mouseOut)
+					         .on("click",clicked);
+
+						  node.append("title")
+						      .text(function(d) { return d.title; });
+
+					      // add a label to each node
+					      var label=svg.selectAll(".mytext")
+					      	   .data(nodes).enter().append("text")
+					      	  .attr("class","nodetext")
+					          .attr("dx", 12)
+					          .attr("dy", ".30em")
+					          .text(function(d) {
+					          	if ( d.hasOwnProperty('id') ) {
+					              	return d.id;}
+					          })
+					          .style("stroke", function(d){return color(d.group) })
+					          .style("stroke-width", 0.2)
+					          .style("fill", function(d) {
+					              return color(d.group);
+					          });
+
+						  simulation
+						      .nodes(nodes)
+						      .on("tick", ticked);
+
+						  simulation.force("link")
+						      .links(links);
+
+						  function ticked() {
+						    link.attr("d", positionLink);
+						    node.attr("transform", positionNode);
+							label.attr("x", function(d){ return d.x; })
+				    			 .attr("y", function (d) {return d.y - 10; });
+
+						  }
+
+
+						function positionLink(d) {
+						  return "M" + d[0].x + "," + d[0].y
+						       + "S" + d[1].x + "," + d[1].y
+						       + " " + d[2].x + "," + d[2].y;
+						}
+
+						function positionNode(d) {
+						  return "translate(" + d.x + "," + d.y + ")";
+						}
+
+						function dragstarted(d) {
+
+						  if (!d3.event.active) {simulation.alphaTarget(0.3).restart();}
+						  d.fx = d.x, d.fy = d.y;
+
+						  simulation
+						    .force("charge", null)
+						    .force("center", null);
+						}
+
+						function dragged(d) {
+						  d.fx = d3.event.x, d.fy = d3.event.y;
+
+						  simulation
+						    .force("charge", null)
+						    .force("center", null);
+						   
+						}
+
+						function dragended(d) {
+						  if (!d3.event.active) {simulation.alphaTarget(0);}
+						  d.fx = d3.event.x, d.fy = d3.event.y;
+						}
+
+
+					// build a dictionary of nodes that are linked
+					    var linkedByIndex = {};
+					    links.forEach(function(d) {
+					        linkedByIndex[d.source.index + "," + d.target.index] = 1;
+					    });
+
+					    // check the dictionary to see if nodes are linked
+					    function isConnected(a, b) {
+					        return linkedByIndex[a.index + "," + b.index] || linkedByIndex[b.index + "," + a.index] || a.index == b.index;
+					    }
+
+					    function mouseOver(opacity) {
+					        return function(d) {
+
+					        	if (node_clicked==false){
+						            // check all other nodes to see if they're connected
+						            // to this one. if so, keep the opacity at 1, otherwise
+						            // fade
+						            node.style("stroke-opacity", function(o) {
+						                thisOpacity = isConnected(d, o) ? 1 : opacity;
+						                return thisOpacity;
+						            });
+						            node.style("fill-opacity", function(o){
+						                thisOpacity = isConnected(d, o) ? 1 : opacity;
+						                return thisOpacity;
+						            })
+						            // also style link accordingly
+						            link.style("stroke-opacity", function(o) {
+						                return o[0] === d || o[2] === d ? 1 : opacity;
+						            });
+						            link.style("stroke", function(o){
+
+						                return o[0] === d || o[2] === d ? "#ee4466" : "#ddd";
+						            });
+						        }
+					        };
+					    }
+					    
+
+					    function mouseOut() {
+					    	if (node_clicked==false){
+						        node.style("stroke-opacity", def_opacity);
+						        node.style("fill-opacity", def_opacity);
+						        link.style("stroke-opacity", def_opacity);
+						        link.style("stroke", "#ddd");
+					    	}
+					    }
+					    
+					    function clicked(d){
+
+					    	if(node_clicked==false) {
+
+						    	if ( d3.select(this).attr("fill")==color(d.group) ){
+						    		 d3.select(this).attr("fill", "#ff6666");
+						    		 d3.select(this).style("fill-opacity", 1);
+						    		 node_clicked=true;
+
+						    		 
+									current_node_str="<div class='note-container' id="+ "current-note-"+ (frame_id-1).toString()+ " style='display:none'><div class='note-header' style='background-color: #ff6666'><p >"+d.id.toString()+"</p></div><div class='note-body'><p class='note-id' >Title: "+d.title+"</p><p class='keywords' >Keywords: "+d.keywords.join(", ")+"</p><p class='pagerank' >Pagerank: "+d.pagerank+"</p><p class='authors' >Authors: "+d.authors.join(", ")+"</p><p class='date'>Date: "+d.date+"</p><p class='metadata' >Metadata: "+d.metadata.join(", ")+"</p></div></div>"
+
+									$("#p"+(frame_id-1).toString()).prepend(current_node_str);
+									$("#p"+(frame_id-1).toString()).find("#current-note-"+(frame_id-1).toString()).fadeIn(100);
+						    	} 
+					    	}
+
+					    	else if(node_clicked==true){ 
+
+					    		if (d3.select(this).attr("fill")=="#ff6666"){
+					    		 d3.select(this).attr("fill", color(d.group) );
+					    		 d3.select(this).style("fill-opacity", 1);
+					    		 node_clicked=false;
+
+					    		 $("#current-note-"+(frame_id-1).toString()).remove();
+
+					    		}
+					    	}
+					    }
+
+
+
+						$(".frame-close").click( function(){
+							if (simulation!=null){ simulation.stop(); }
+							$(".main-window").find("#"+this.id.toString().slice(1)).fadeOut(300);
+							$(".main-window").find("#p"+this.id.toString().slice(2)).fadeOut(300);
+
+						});
+
+						$(".note-container").hover( function(){
+							$(this).css("opacity","1");
+						}, function(){
+							$(this).css("opacity","0.8");
+						});
+
+				    
+					});
+
+
+				}
+
+				    
+			});
+
+	
+	});
+
+
+
+</script>
+
+
+</body>
+
+
+
